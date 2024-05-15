@@ -1,0 +1,55 @@
+{% extends 'main/base.html' %}
+{% block content %}
+<div class="container">
+    <div class="row text-center">
+        <div class="col-12">
+            <div class="card mb-4 box-shadow">
+                <div class="card-header">
+                    <h4 class="my-0 font-weight-normal">Insight</h4>
+                </div>
+                <div class="card-body">
+                    <h2 class="card-title pricing-card-title">Ваша история запросов</h2>
+                    <table class="table table-striped">
+                        <thead>
+                        <tr>
+                            <th scope="col">ID запроса</th>
+                            <th scope="col">Дата</th>
+                            <th scope="col">Ссылка</th>
+                            <th scope="col">Сценарий</th>
+                            <th scope="col">Наличие результата</th>
+                            <th scope="col"></th>
+                        </tr>
+                        </thead>
+
+                        <tbody>
+                        {% for object in summary_requests %}
+                        <tr>
+                            <th scope="row">{{ object.pk }}</th>
+                            <td>{{ object.date }}</td>
+                            <td>
+                                <a href="{{ object.link }}" target="_blank">{{ object.link }}</a>
+                            </td>
+                            <td>{{ object.script }}</td>
+                            <td>{{ object.is_ready }}</td>
+
+                            <td>
+                                <a href="{% url 'main:summary_read' object.pk %}">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary">Подробнее</button>
+                                </a>
+                            </td>
+                        </tr>
+
+                        {% endfor %}
+                        </tbody>
+
+
+                    </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}
