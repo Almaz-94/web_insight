@@ -2,9 +2,10 @@
     <h5 class="my-0 mr-md-auto font-weight-normal">Insight</h5>
 
     <nav class="ms-5 d-flex align-items-center">
-        <a class="p-2 btn btn-outline-primary" href="{% url 'main:summary_list' %}">Моя история</a>
+
         <a class="p-2 btn btn-outline-primary" href="{% url 'main:faq' %}">FAQ</a>
         {% if user.is_authenticated %}
+        <a class="p-2 btn btn-outline-primary" href="{% url 'main:summary_list' %}">Моя история</a>
         <a class="p-2 btn btn-outline-primary" href="{% url 'main:request_summary' %}">Саммари</a>
         <form method="post" action="{% url 'user:logout' %}">
             {% csrf_token %}

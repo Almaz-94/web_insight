@@ -10,7 +10,7 @@
             <form method="post" action="" class="form-floating" enctype="multipart/form-data">
                 {% csrf_token %}
                 {{ form.as_p }}
-                <input type="submit">
+                <input type="submit" value="Войти">
             </form>
 
             <a class="p-2 btn btn-outline-primary" href="{% url 'user:register' %}">Регистрация</a>

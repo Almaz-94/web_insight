@@ -20,11 +20,12 @@ class Summary(models.Model):
     link = models.CharField(max_length=100, verbose_name='ссылка')
     transcription = models.TextField(verbose_name='транскрипция', **NULLABLE)
     summary = models.TextField(verbose_name='саммари', **NULLABLE)
-    is_ready = models.BooleanField(default=False, verbose_name="результат готов")
+    transcription_is_ready = models.BooleanField(default=False, verbose_name="транскрипция готова")
+    summary_is_ready = models.BooleanField(default=False, verbose_name="саммари готов")
     worker_db_id = models.IntegerField(verbose_name='ИД результата в БД воркера', **NULLABLE)
     date = models.DateTimeField(auto_now_add=True, verbose_name='дата и время запроса')
     script = models.CharField(max_length=40, choices=SCRIPT_CHOICES, default=SUMMARY, verbose_name='сценарий обработки')
-    prompt = models.TextField(verbose_name='Промпт пользователя', **NULLABLE)
+    prompt = models.TextField(verbose_name='Промт пользователя', **NULLABLE)
 
     def __str__(self):
         return f'{self.user}, {self.link}'

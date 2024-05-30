@@ -40,9 +40,18 @@
                                     </p>
                                     <p class="card-text">ИД запроса в ДБ воркера: {{ summary.worker_db_id }}</p>
                                     <p class="card-text">Сценарий: {{ summary.script }}</p>
-                                    <p class="card-text">Результат готов: {{ summary.is_ready }}</p>
+                                    <p class="card-text">Транскрибация готова: {{ summary.transcription_is_ready }}</p>
+                                    <p class="card-text">Саммари готов: {{ summary.summary_is_ready }}</p>
+                                    {% if summary.transcription_is_ready %}
+                                    <p class="card-text">
+                                        <a href="{% url 'main:summary_download' pk=summary.pk %}">Скачать текст
+                                            саммари</a>
+                                    </p>
                                     <p class="card-text">Транскрипция: {{ summary.transcription }}</p>
+                                    {% endif %}
+                                    {% if summary.summary_is_ready %}
                                     <p class="card-text">Саммари: {{ summary.summary }}</p>
+                                    {% endif %}
                                     <div class="d-flex justify-content-between align-items-center">
                                         <div class="btn-group">
                                         </div>
@@ -91,6 +100,7 @@
     function onPlayerStateChange(event) {
         // Do something when the player's state changes (e.g., video ends)
     }
+
 
 </script>
 
