@@ -1,4 +1,5 @@
 {% extends 'main/base.html' %}
+{% load show_filename %}
 {% block content %}
 <div class="container">
     <div class="row text-center">
@@ -14,9 +15,10 @@
                         <tr>
                             <th scope="col">ID запроса</th>
                             <th scope="col">Дата</th>
-                            <th scope="col">Ссылка</th>
+                            <th scope="col">Ссылка/Файл</th>
                             <th scope="col">Сценарий</th>
-                            <th scope="col">Наличие результата</th>
+                            <th scope="col">Транскрибация готова</th>
+                            <th scope="col">Саммари готов</th>
                             <th scope="col"></th>
                         </tr>
                         </thead>
@@ -27,10 +29,15 @@
                             <th scope="row">{{ object.pk }}</th>
                             <td>{{ object.date }}</td>
                             <td>
-                                <a href="{{ object.link }}" target="_blank">{{ object.link }}</a>
+                                {% if object.youtube_link %}
+                                <a href="{{ object.link }}" target="_blank">{{ object.youtube_link }}</a>
+                                {% else %}
+                                {{ object.audio_file|filename }}
+                                {% endif %}
                             </td>
-                            <td>{{ object.script }}</td>
-                            <td>{{ object.is_ready }}</td>
+                            <td>{{ object.get_script_display }}</td>
+                            <td>{{ object.transcription_is_ready }}</td>
+                            <td>{{ object.summary_is_ready }}</td>
 
                             <td>
                                 <a href="{% url 'main:summary_read' object.pk %}">

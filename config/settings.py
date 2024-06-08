@@ -27,8 +27,13 @@ SECRET_KEY = 'django-insecure-=pv_1g71@nh)o8uyy+o5c@!ia2#85gotasrp)!mm7&!!1gq$ha
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = [
+    'ab1c-2a03-d000-17-afb8-71ac-4e39-1260-e2cb.ngrok-free.app',
+    '127.0.0.1',
+]
+CSRF_TRUSTED_ORIGINS = [
+    'https://ab1c-2a03-d000-17-afb8-71ac-4e39-1260-e2cb.ngrok-free.app',
+]
 
 # Application definition
 
@@ -42,6 +47,7 @@ INSTALLED_APPS = [
 
     'users',
     'main',
+    'payment_youkassa',
 
 
 ]
@@ -127,7 +133,7 @@ AUTH_USER_MODEL = 'users.User'
 
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
-LOGIN_URL = '/users/'
+LOGIN_URL = '/user/'
 
 STATIC_URL = 'static/'
 STATICFILES_DIRS = (
@@ -138,3 +144,46 @@ STATICFILES_DIRS = (
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
+YOUTUBE_API_KEY = os.getenv('YOUTUBE_API_KEY')
+ALLOWED_TIME_UNAUTH_USER = 20
+SUPPORTED_EXTENSIONS = ['m4a', 'm4b', 'm4p', 'm4r', 'mp3', 'aac', 'ac3', 'wav', 'alac',
+                        'flac', 'flv', 'wma', 'amr', 'mpga', 'ogg', 'oga', 'mogg',
+                        'svx', 'aif', 'ape', 'au', 'dss', 'opus', 'qcp', 'tta', 'voc', 'wv',
+                        'm4p', 'm4v', 'webm', 'mts', 'm2ts', 'ts', 'mov', 'mp2', 'mxf',]
+
+FILE_UPLOAD_TEMP_DIR = os.path.join(MEDIA_ROOT, 'audio_files/temp')
+
+YOUKASSA_SHOP_ID = os.getenv('YOUKASSA_SHOP_ID')
+YOUKASSA_SECRET_KEY = os.getenv('YOUKASSA_SECRET_KEY')
+RUB_TO_MINUTE_KOEF = 1 / 3
+
+
+FILE_UPLOAD_HANDLERS = [
+    'django.core.files.uploadhandler.TemporaryFileUploadHandler',
+]
+
+
+
+LOG_FILE_PATH = os.path.join(BASE_DIR, 'logs', 'django.log')
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': LOG_FILE_PATH,  # Specify the path to your log file
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['file'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+    },
+}

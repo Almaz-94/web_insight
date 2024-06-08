@@ -1,24 +1,19 @@
 {% extends 'main/base.html' %}
-
 {% block content %}
 <div class="col-lg-5 col-md-6 col-sm-12">
     <div class="card mb-7 box-shadow">
         <div class="card-header">
-            <h4 class="my-0 font-weight-normal">Отправьте ссылку на Ютуб либо прикрепите аудио файл.</h4>
+            <h4 class="my-0 font-weight-normal">Введите сумму пополнения</h4>
             {% if user.is_authenticated %}
             <h4 class="my-0 font-weight-normal">Доступное вам время {{ user.time_left }} мин.</h4>
-            {% else %}
-            <h4 class="my-0 font-weight-normal">Доступное вам время 20 минут </h4>
             {% endif %}
         </div>
         <div class="card-body">
-            <form method="post" action="" class="form-floating" enctype="multipart/form-data">
+            <form method="post" action="" class="form-floating">
                 {% csrf_token %}
                 {{ form.as_p }}
                 <input type="submit">
             </form>
-
-
         </div>
     </div>
 </div>

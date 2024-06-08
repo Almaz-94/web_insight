@@ -1,5 +1,5 @@
 {% extends 'main/base.html' %}
-
+{% load show_filename %}
 {% block content %}
 <head>
     <script src="https://www.youtube.com/iframe_api"></script>
@@ -33,13 +33,20 @@
                                     <h3 class="card-title pricing-card-title">Запрос №{{ summary.pk }}</h3>
                                 </div>
                                 <div class="card-body">
+                                    {% if user.is_authenticated %}
                                     <p class="card-text">Автор: {{ summary.user }}</p>
+                                    {% endif %}
                                     <p class="card-text">Дата: {{ summary.date }}</p>
+                                    {% if summary.audio_file %}
+                                    <p class="card-text">Файл: {{ summary.audio_file|filename }}</p>
+                                    {% endif %}
+                                    {% if summary.youtube_link %}
                                     <p class="card-text">Ссылка:
-                                        <a href="{{ object.link }}" target="_blank">{{ object.link }}</a>
+                                        <a href="{{ summary.youtube_link }}" target="_blank">{{ summary.youtube_link }}</a>
                                     </p>
+                                    {% endif %}
                                     <p class="card-text">ИД запроса в ДБ воркера: {{ summary.worker_db_id }}</p>
-                                    <p class="card-text">Сценарий: {{ summary.script }}</p>
+                                    <p class="card-text">Сценарий: {{ summary.get_script_display }}</p>
                                     <p class="card-text">Транскрибация готова: {{ summary.transcription_is_ready }}</p>
                                     <p class="card-text">Саммари готов: {{ summary.summary_is_ready }}</p>
                                     {% if summary.transcription_is_ready %}
@@ -47,7 +54,7 @@
                                         <a href="{% url 'main:summary_download' pk=summary.pk %}">Скачать текст
                                             саммари</a>
                                     </p>
-                                    <p class="card-text">Транскрипция: {{ summary.transcription }}</p>
+                                    <p class="card-text">Транскрибация: {{ summary.transcription }}</p>
                                     {% endif %}
                                     {% if summary.summary_is_ready %}
                                     <p class="card-text">Саммари: {{ summary.summary }}</p>
@@ -100,6 +107,7 @@
     function onPlayerStateChange(event) {
         // Do something when the player's state changes (e.g., video ends)
     }
+
 
 
 </script>
