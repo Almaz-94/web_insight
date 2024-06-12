@@ -1,7 +1,12 @@
+import asyncio
 import json
 import logging
+import os
+import tempfile
 
+from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.exceptions import ValidationError
 from django.http import Http404, HttpResponse
 from django.shortcuts import redirect
 from django.urls import reverse_lazy, reverse
@@ -10,9 +15,11 @@ from django.views.generic import CreateView, ListView, DetailView, TemplateView
 
 from main.forms import SummaryForm
 from main.models import Summary
+from main.s3 import S3Client
 from main.services import get_youtube_video_duration, get_audio_duration
 
 logger = logging.getLogger(__name__)
+
 class SummaryCreateView(CreateView):
     model = Summary
     form_class = SummaryForm
@@ -32,23 +39,61 @@ class SummaryCreateView(CreateView):
         return reverse_lazy('main:summary_read', kwargs={'pk': self.object.pk})
 
     def form_valid(self, form):
-        if self.request.user.is_authenticated:
-            form.instance.user = self.request.user
-            user = self.request.user
-        else:
-            form.instance.session_key = self.request.session.session_key
-            user = None
+        user = self.get_user(form)
         response = super().form_valid(form)
 
-        if user and form.cleaned_data['audio_file']:
-            video_length = get_audio_duration(form.cleaned_data['audio_file'])
-            user.time_left -= video_length
-            user.save()
-        elif user and form.cleaned_data['youtube_link']:
-            video_length = get_youtube_video_duration(form.cleaned_data['youtube_link'])
-            user.time_left -= video_length
-            user.save()
+        s3_client = self.get_s3_client()
+
+        if form.cleaned_data['audio_file']:
+            file_url = self.handle_audio_file_upload(form.cleaned_data['audio_file'], s3_client)
+            form.instance.file_link_s3 = file_url
+            form.instance.save()
+
+        self.update_user_time_left(user, form)
+
         return response
+
+    def get_user(self, form):
+        if self.request.user.is_authenticated:
+            form.instance.user = self.request.user
+            return self.request.user
+        else:
+            form.instance.session_key = self.request.session.session_key
+            return None
+
+    def get_s3_client(self):
+        return S3Client(
+            access_key=settings.S3_ACCESS_KEY,
+            secret_key=settings.S3_SECRET_KEY,
+            endpoint_url=settings.S3_ENDPOINT_URL,
+            bucket_name=settings.S3_BUCKET_NAME,
+        )
+
+    def handle_audio_file_upload(self, audio_file, s3_client):
+        with tempfile.NamedTemporaryFile(delete=False, dir=settings.FILE_UPLOAD_TEMP_DIR) as temp_file:
+            for chunk in audio_file.chunks():
+                temp_file.write(chunk)
+            temp_file_path = temp_file.name
+
+        async def upload_and_get_url():
+            await s3_client.upload_file(temp_file_path)
+            return await s3_client.generate_presigned_url(temp_file_path.split('/')[-1])
+
+        return asyncio.run(upload_and_get_url())
+
+    def update_user_time_left(self, user, form):
+        if not user:
+            return
+
+        if form.cleaned_data['audio_file']:
+            video_length = get_audio_duration(form.cleaned_data['audio_file'])
+        elif form.cleaned_data['youtube_link']:
+            video_length = get_youtube_video_duration(form.cleaned_data['youtube_link'])
+        else:
+            raise ValidationError('Введите либо ссылку на ютуб, либо загрузите файл')
+
+        user.time_left -= video_length
+        user.save()
 
 
 class SummaryListView(ListView):

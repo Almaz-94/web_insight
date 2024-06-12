@@ -166,6 +166,11 @@ FILE_UPLOAD_HANDLERS = [
     'django.core.files.uploadhandler.TemporaryFileUploadHandler',
 ]
 
+S3_SECRET_KEY = os.getenv('S3_SECRET_KEY')
+S3_ACCESS_KEY = os.getenv('S3_ACCESS_KEY')
+S3_ENDPOINT_URL = os.getenv('S3_ENDPOINT_URL')
+S3_BUCKET_NAME = os.getenv('S3_BUCKET_NAME')
+
 
 
 LOG_FILE_PATH = os.path.join(BASE_DIR, 'logs', 'django.log')

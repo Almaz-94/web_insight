@@ -25,6 +25,7 @@ class Summary(models.Model):
     youtube_link = models.CharField(max_length=100, verbose_name='Youtube ссылка',
                                     validators=[validate_youtube_url], **NULLABLE)
     audio_file = models.FileField(upload_to='audio_files/', verbose_name='аудио файл', **NULLABLE)
+    file_link_s3 = models.TextField(verbose_name='ссылка на файл в s3', **NULLABLE)
     transcription = models.TextField(verbose_name='транскрибация', **NULLABLE)
     summary = models.TextField(verbose_name='саммари', **NULLABLE)
     transcription_is_ready = models.BooleanField(default=False, verbose_name="транскрибация готова")
@@ -42,8 +43,8 @@ class Summary(models.Model):
     #     self.full_clean()  # This will call the clean method
     #     super().save(*args, **kwargs)
 
-    # def __str__(self):
-    #     return f'{self.user}, {self.youtube_link}'
+    def __str__(self):
+        return f'{self.audio_file}, {self.file_link_s3}'
 
     class Meta:
         verbose_name = 'запрос к воркеру'
