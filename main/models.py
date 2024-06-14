@@ -9,16 +9,7 @@ NULLABLE = {'blank': True, 'null': True}
 
 
 class Summary(models.Model):
-    # PROTOCOL = "Протокол встречи"
-    # SUMMARY = "Саммари записи"
-    # RESUME = "Резюме консультации"
-    # CONTENT = "Содержание лекции"
-    # SCRIPT_CHOICES = (
-    #     (PROTOCOL, "Протокол встречи"),
-    #     (SUMMARY, "Саммари записи"),
-    #     (RESUME, "Резюме консультации"),
-    #     (CONTENT, "Содержание лекции"),
-    # )
+
     SCRIPT_CHOICES = get_all_assistants()
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name='пользователь', **NULLABLE)
     session_key = models.CharField(max_length=40, verbose_name='сессия', **NULLABLE)
@@ -35,16 +26,8 @@ class Summary(models.Model):
     script = models.CharField(max_length=40, choices=SCRIPT_CHOICES, verbose_name='сценарий обработки')
     prompt = models.TextField(verbose_name='Промт пользователя', **NULLABLE)
 
-    # def clean(self):
-    #     if not self.youtube_link and not self.audio_file or self.youtube_link and self.audio_file:
-    #         raise ValidationError('Введите либо ссылку на ютуб, либо загрузите файл')
-    #
-    # def save(self, *args, **kwargs):
-    #     self.full_clean()  # This will call the clean method
-    #     super().save(*args, **kwargs)
-
-    def __str__(self):
-        return f'{self.audio_file}, {self.file_link_s3}'
+    # def __str__(self):
+    #     return f'{self.audio_file}, {self.file_link_s3}'
 
     class Meta:
         verbose_name = 'запрос к воркеру'

@@ -1,22 +1,29 @@
+import os
 import re
 
+from django.conf import settings
 from django.core.exceptions import ValidationError
 
-from main.services import get_audio_duration, get_youtube_video_duration
+from main.services import get_youtube_video_duration, get_audio_duration
 
 
-def validate_audio_duration(file, time_left):
-    duration_minutes = get_audio_duration(file)
-    if duration_minutes:
-        return duration_minutes <= time_left
-    return False
+def validate_link_or_file(youtube_link, audio_file):
+    if not youtube_link and not audio_file or youtube_link and audio_file:
+        raise ValidationError('Введите либо ссылку на ютуб, либо загрузите файл')
 
 
-def validate_youtube_duration(youtube_link, time_left):
-    duration_minutes = get_youtube_video_duration(youtube_link)
-    if duration_minutes:
-        return duration_minutes <= time_left
-    return False
+def validate_youtube(youtube_link, time_left, error_message):
+    validate_youtube_url(youtube_link)
+    if get_youtube_video_duration(youtube_link) > time_left:
+        raise ValidationError(error_message)
+
+
+def validate_audio_file(audio_file, time_left, error_message):
+    extension = os.path.splitext(audio_file.name)[1][1:].lower()
+    if extension not in settings.SUPPORTED_EXTENSIONS:
+        raise ValidationError("Неподдерживаемое расширение файла")
+    if get_audio_duration(audio_file) > time_left:
+        raise ValidationError(error_message)
 
 
 def validate_youtube_url(value):

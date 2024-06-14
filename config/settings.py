@@ -89,9 +89,11 @@ dotenv.load_dotenv()
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('DB_NAME'),
-        'PASSWORD': os.getenv('DB_PASSWORD'),
-        'USER': os.getenv('DB_USER'),
+        'NAME': os.getenv('POSTGRES_DB'),
+        'PASSWORD': os.getenv('POSTGRES_PASSWORD'),
+        'USER': os.getenv('POSTGRES_USER'),
+        # 'HOST': 'db',
+        # 'PORT': os.getenv('POSTGRES_PORT', '5432'),
     }
 }
 
@@ -149,7 +151,7 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 YOUTUBE_API_KEY = os.getenv('YOUTUBE_API_KEY')
-ALLOWED_TIME_UNAUTH_USER = 20
+ALLOWED_TIME_UNAUTH_USER = 10
 SUPPORTED_EXTENSIONS = ['m4a', 'm4b', 'm4p', 'm4r', 'mp3', 'aac', 'ac3', 'wav', 'alac',
                         'flac', 'flv', 'wma', 'amr', 'mpga', 'ogg', 'oga', 'mogg',
                         'svx', 'aif', 'ape', 'au', 'dss', 'opus', 'qcp', 'tta', 'voc', 'wv',
@@ -192,3 +194,12 @@ LOGGING = {
         },
     },
 }
+
+
+EMAIL_USE_TLS = True
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.getenv('GMAIL_PASS')
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_EMAIL_AUTHOR')
+DEFAULT_TO_EMAIL = 'almaz28-10@mail.ru'

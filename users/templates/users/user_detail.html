@@ -1,0 +1,19 @@
+{% extends 'main/base.html' %}
+
+{% block content %}
+<div class="col-lg-5 col-md-6 col-sm-12">
+    <div class="card mb-7 box-shadow">
+        <div class="card-header">
+            <h4 class="my-0 font-weight-normal">Профиль</h4>
+        </div>
+        <div class="card-body">
+
+            <h4 class="my-0 font-weight-normal">Почта {{ user.email }}</h4>
+            <h4 class="my-0 font-weight-normal">Оставшееся время {{ user.time_left }} мин.</h4>
+
+            <a class="p-2 btn btn-outline-primary" href="{% url 'main:summary_list' %}">История запросов</a>
+            <a class="p-2 btn btn-outline-primary" href="{% url 'payment:payment' %}">Пополнить баланс</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

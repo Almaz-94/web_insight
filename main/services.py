@@ -7,10 +7,17 @@ import isodate
 import requests
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from pydub.utils import mediainfo
 
 
-
+def get_user_time(user):
+    if user and user.is_authenticated:
+        time_left = user.time_left
+        error_message = f"Видео превышает по длине Ваше доступное время ({time_left} минута)"
+    else:
+        time_left = settings.ALLOWED_TIME_UNAUTH_USER
+        error_message = f"Неавторизованные пользователи могут загружать видео продолжительностью " \
+                        f"не более {time_left} минут"
+    return time_left, error_message
 
 
 def extract_video_id(url):
@@ -22,8 +29,8 @@ def extract_video_id(url):
 
 def get_youtube_video_duration(youtube_link):
     video_id = extract_video_id(youtube_link)
-    API_KEY = settings.YOUTUBE_API_KEY
-    url = f'https://www.googleapis.com/youtube/v3/videos?id={video_id}&part=contentDetails&key={API_KEY}'
+    api_key = settings.YOUTUBE_API_KEY
+    url = f'https://www.googleapis.com/youtube/v3/videos?id={video_id}&part=contentDetails&key={api_key}'
     response = requests.get(url)
     if response.status_code == 200:
         data = response.json()
@@ -47,8 +54,6 @@ def get_audio_duration(file):
     except ffmpeg.Error:
         raise ValidationError("Что то пошло не так")
     return duration
-
-
 
 #
 # async def get_media_duration_in_seconds(filepath):
@@ -86,14 +91,9 @@ def get_media_duration_in_seconds(filepath):
     print(f"Длина медиафайла: {duration_sec:.2f} секунд(ы)")
     return duration_sec
 
-# print(get_media_duration_in_seconds(r'E:\Python projects\web_insight\media\audio_files\Alice_Cooper-Poison-kissvk.com.mp3'))
-
-
-
 
 def get_all_assistants():
     response = requests.get('http://194.87.79.10:8000/development/assistant/get_all').json()
     assistants = [(str(elem['id']), elem['name']) for elem in response]
     return tuple(assistants)
 
-# print(get_all_assistants())

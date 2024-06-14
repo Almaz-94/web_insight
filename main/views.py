@@ -1,14 +1,10 @@
 import asyncio
-import json
 import logging
-import os
 import tempfile
 
 from django.conf import settings
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ValidationError
 from django.http import Http404, HttpResponse
-from django.shortcuts import redirect
 from django.urls import reverse_lazy, reverse
 from django.views.generic import CreateView, ListView, DetailView, TemplateView
 
@@ -76,7 +72,7 @@ class SummaryCreateView(CreateView):
             temp_file_path = temp_file.name
 
         async def upload_and_get_url():
-            await s3_client.upload_file(temp_file_path)
+            # await s3_client.upload_file(temp_file_path)
             return await s3_client.generate_presigned_url(temp_file_path.split('/')[-1])
 
         return asyncio.run(upload_and_get_url())
