@@ -26,6 +26,9 @@ class UserLoginForm(StyleFormMixin, AuthenticationForm):
         fields = ('email','password',)
 
 
-class PasswordRecoveryForm(Form):
+class PasswordRecoveryForm(StyleFormMixin, Form):
     email = forms.EmailField(label="Почта")
 
+
+class VerificationForm(StyleFormMixin, Form):
+    number = forms.IntegerField(label='Номер')

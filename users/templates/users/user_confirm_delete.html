@@ -1,0 +1,19 @@
+{% extends 'main/base.html' %}
+
+{% block content %}
+<div class="col-lg-5 col-md-6 col-sm-12">
+    <div class="card mb-7 box-shadow">
+
+        <div class="card-body">
+            <form method="post" action="" class="form-floating">
+                {% csrf_token %}
+                <p>Подтвердите удаление Вашего аккаунта  {{object.email}}"</p>
+                <button type="submit" class="btn btn-danger">Удалить</button>
+                <a href="{% url 'user:profile' object.pk %}" class="btn btn-success">Отмена</a>
+            </form>
+
+
+        </div>
+    </div>
+</div>
+{% endblock %}

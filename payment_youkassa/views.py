@@ -14,7 +14,6 @@ from django.views.generic import FormView, TemplateView
 from yookassa import Configuration, Payment as YouKassaPayment
 from yookassa.domain.notification import WebhookNotification
 
-from users.models import User
 from .forms import PaymentForm
 from .models import Payment
 
@@ -54,7 +53,6 @@ class PaymentView(LoginRequiredMixin, FormView):
 
 class PaymentSuccessView(TemplateView):
     template_name = 'payment_youkassa/payment_success.html'
-
 
 
 @method_decorator(csrf_exempt, name='dispatch')

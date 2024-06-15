@@ -8,6 +8,16 @@ import requests
 from django.conf import settings
 from django.core.exceptions import ValidationError
 
+from main.s3 import S3Client
+
+
+def get_s3_client():
+    return S3Client(
+        access_key=settings.S3_ACCESS_KEY,
+        secret_key=settings.S3_SECRET_KEY,
+        endpoint_url=settings.S3_ENDPOINT_URL,
+        bucket_name=settings.S3_BUCKET_NAME,
+    )
 
 def get_user_time(user):
     if user and user.is_authenticated:

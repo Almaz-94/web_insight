@@ -9,9 +9,9 @@ from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.core.mail import send_mail
 from django.shortcuts import redirect, render
 from django.urls import reverse_lazy, reverse
-from django.views.generic import CreateView, DetailView, FormView
+from django.views.generic import CreateView, DetailView, FormView, DeleteView
 
-from users.forms import UserLoginForm, UserRegisterForm, PasswordRecoveryForm
+from users.forms import UserLoginForm, UserRegisterForm, PasswordRecoveryForm, VerificationForm
 from users.models import User
 
 
@@ -46,6 +46,7 @@ class PasswordRecoveryView(FormView):
         user.save()
         return super().form_valid(form)
 
+
 class RegisterView(CreateView):
     model = User
     form_class = UserRegisterForm
@@ -68,22 +69,32 @@ class RegisterView(CreateView):
         return super().form_valid(form)
 
 
-def verify(request):
-    if request.method == 'POST':
-        number = request.POST.get('number')
-    try:
-        user = User.objects.get(verification_code=number)
-        user.is_active = True
-        user.save()
-        return redirect(reverse('user:login'))
-    except ObjectDoesNotExist:
-        return render(request, 'users/verification.html')
+class VerificationFormView(FormView):
+    form_class = VerificationForm
+    template_name = 'users/verification.html'
+    success_url = reverse_lazy('user:login')
+
+    def form_valid(self, form):
+        number = form.cleaned_data['number']
+        try:
+            user = User.objects.get(verification_code=number)
+            user.is_active = True
+            user.save()
+
+        except ObjectDoesNotExist:
+            redirect(reverse('user:verification'))
+        return super().form_valid(form)
 
 
 class UserProfileView(LoginRequiredMixin, DetailView):
     context_object_name = 'user'
     model = User
 
+
+class UserDeleteView(DeleteView):
+    model = User
+    template_name = 'users/user_confirm_delete.html'
+    success_url = reverse_lazy('main:request_summary')
 
 class LogoutView(BaseLogoutView):
     next_page = reverse_lazy('user:login')

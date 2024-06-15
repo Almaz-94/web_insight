@@ -13,6 +13,7 @@
 
             <a class="p-2 btn btn-outline-primary" href="{% url 'main:summary_list' %}">История запросов</a>
             <a class="p-2 btn btn-outline-primary" href="{% url 'payment:payment' %}">Пополнить баланс</a>
+            <a class="p-2 btn btn-outline-danger" href="{% url 'user:delete' object.pk %}">Удалить аккаунт</a>
         </div>
     </div>
 </div>
