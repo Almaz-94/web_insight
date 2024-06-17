@@ -2,6 +2,7 @@ import json
 import logging
 
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import render, redirect
 from django.conf import settings
 from django.urls import reverse_lazy
@@ -69,7 +70,7 @@ class WebhookView(View):
                 buyer.time_left += int(float(payment.amount) * float(settings.RUB_TO_MINUTE_KOEF))
                 buyer.save()
             return JsonResponse({'status': 'ok'})
-        except Payment.DoesNotExist:
+        except ObjectDoesNotExist:
             return HttpResponseBadRequest("Payment not found")
         except Exception as e:
             return HttpResponseBadRequest("Error processing webhook")
