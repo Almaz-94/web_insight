@@ -4,7 +4,7 @@ services:
     env_file:
       - .env
     ports:
-      - "5441:5441"
+      - "5441:5432"
 
   web_app:
     image: docker.io/almaz1994/web_insight:latest
@@ -20,4 +20,4 @@ services:
       - DB_USER=${POSTGRES_USER}
       - DB_PASSWORD=${POSTGRES_PASSWORD}
       - DB_HOST=db
-      - DB_PORT=5441
+      - DB_PORT=5432
