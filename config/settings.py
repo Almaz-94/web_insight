@@ -30,6 +30,7 @@ DEBUG = True
 ALLOWED_HOSTS = [
     'ab1c-2a03-d000-17-afb8-71ac-4e39-1260-e2cb.ngrok-free.app',
     '127.0.0.1',
+    '194.87.79.10'
 ]
 CSRF_TRUSTED_ORIGINS = [
     'https://ab1c-2a03-d000-17-afb8-71ac-4e39-1260-e2cb.ngrok-free.app',
@@ -92,8 +93,8 @@ DATABASES = {
         'NAME': os.getenv('POSTGRES_DB'),
         'PASSWORD': os.getenv('POSTGRES_PASSWORD'),
         'USER': os.getenv('POSTGRES_USER'),
-        # 'HOST': 'db',
-        # 'PORT': os.getenv('POSTGRES_PORT', '5432'),
+        'HOST': 'db',
+        'PORT': os.getenv('POSTGRES_PORT', '5441'),
     }
 }
 
