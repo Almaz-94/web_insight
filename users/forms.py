@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
-from django.forms import Form, ModelForm
+from django.forms import Form
 
 from users.models import User
 
@@ -13,17 +13,15 @@ class StyleFormMixin:
 
 
 class UserRegisterForm(StyleFormMixin, UserCreationForm):
-
     class Meta:
         model = User
-        fields = ('email','password1', 'password2')
+        fields = ('email', 'password1', 'password2')
 
 
 class UserLoginForm(StyleFormMixin, AuthenticationForm):
-
     class Meta:
         model = User
-        fields = ('email','password',)
+        fields = ('email', 'password',)
 
 
 class PasswordRecoveryForm(StyleFormMixin, Form):

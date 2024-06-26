@@ -1,4 +1,3 @@
-import asyncio
 import re
 from tempfile import NamedTemporaryFile
 
@@ -19,6 +18,7 @@ def get_s3_client():
         bucket_name=settings.S3_BUCKET_NAME,
     )
 
+
 def get_user_time(user):
     if user and user.is_authenticated:
         time_left = user.time_left
@@ -37,7 +37,7 @@ def extract_video_id(url):
         return match.group(1)
 
 
-def get_youtube_video_duration(youtube_link):
+def get_youtube_video_duration(youtube_link) -> int:
     video_id = extract_video_id(youtube_link)
     api_key = settings.YOUTUBE_API_KEY
     url = f'https://www.googleapis.com/youtube/v3/videos?id={video_id}&part=contentDetails&key={api_key}'
@@ -49,7 +49,6 @@ def get_youtube_video_duration(youtube_link):
             duration_minutes = isodate.parse_duration(duration).total_seconds() / 60
             return duration_minutes
     raise ValidationError("Что то пошло не так")
-
 
 
 def get_audio_duration(file):
@@ -64,6 +63,7 @@ def get_audio_duration(file):
     except ffmpeg.Error:
         raise ValidationError("Что то пошло не так")
     return duration
+
 
 #
 # async def get_media_duration_in_seconds(filepath):
@@ -103,7 +103,7 @@ def get_media_duration_in_seconds(filepath):
 
 
 def get_all_assistants():
-    response = requests.get('http://194.87.79.10:8000/development/assistant/get_all').json()
+    host = settings.API_HOST_URL
+    response = requests.get(f'{host}/development/assistant/get_all').json()
     assistants = [(str(elem['id']), elem['name']) for elem in response]
     return tuple(assistants)
-
