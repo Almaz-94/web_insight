@@ -5,9 +5,9 @@ from random import randint
 from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView as BaseLoginView, LogoutView as BaseLogoutView
-from django.core.exceptions import ObjectDoesNotExist, ValidationError
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import send_mail
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect
 from django.urls import reverse_lazy, reverse
 from django.views.generic import CreateView, DetailView, FormView, DeleteView
 
@@ -95,6 +95,7 @@ class UserDeleteView(DeleteView):
     model = User
     template_name = 'users/user_confirm_delete.html'
     success_url = reverse_lazy('main:request_summary')
+
 
 class LogoutView(BaseLogoutView):
     next_page = reverse_lazy('user:login')

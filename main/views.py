@@ -5,16 +5,15 @@ import tempfile
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.http import Http404, HttpResponse
-from django.urls import reverse_lazy, reverse
+from django.urls import reverse_lazy
 from django.views.generic import CreateView, ListView, DetailView, TemplateView
-
 
 from main.forms import SummaryForm
 from main.models import Summary
-from main.s3 import S3Client
 from main.services import get_youtube_video_duration, get_audio_duration, get_s3_client
 
 logger = logging.getLogger(__name__)
+
 
 class SummaryCreateView(CreateView):
     model = Summary

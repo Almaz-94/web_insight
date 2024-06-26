@@ -17,7 +17,6 @@ import dotenv
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
@@ -49,7 +48,6 @@ INSTALLED_APPS = [
     'users',
     'main',
     'payment_youkassa',
-
 
 ]
 
@@ -83,7 +81,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 dotenv.load_dotenv()
@@ -93,7 +90,7 @@ DATABASES = {
         'NAME': os.getenv('POSTGRES_DB'),
         'PASSWORD': os.getenv('POSTGRES_PASSWORD'),
         'USER': os.getenv('POSTGRES_USER'),
-        'HOST': 'db',
+        'HOST': os.getenv('HOST'),
         'PORT': os.getenv('POSTGRES_PORT', '5432'),
     }
 }
@@ -116,7 +113,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
 
@@ -127,7 +123,6 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
@@ -156,14 +151,13 @@ ALLOWED_TIME_UNAUTH_USER = 10
 SUPPORTED_EXTENSIONS = ['m4a', 'm4b', 'm4p', 'm4r', 'mp3', 'aac', 'ac3', 'wav', 'alac',
                         'flac', 'flv', 'wma', 'amr', 'mpga', 'ogg', 'oga', 'mogg',
                         'svx', 'aif', 'ape', 'au', 'dss', 'opus', 'qcp', 'tta', 'voc', 'wv',
-                        'm4p', 'm4v', 'webm', 'mts', 'm2ts', 'ts', 'mov', 'mp2', 'mxf',]
+                        'm4p', 'm4v', 'webm', 'mts', 'm2ts', 'ts', 'mov', 'mp2', 'mxf', ]
 
 FILE_UPLOAD_TEMP_DIR = os.path.join(MEDIA_ROOT, 'audio_files/temp')
 
 YOUKASSA_SHOP_ID = os.getenv('YOUKASSA_SHOP_ID')
 YOUKASSA_SECRET_KEY = os.getenv('YOUKASSA_SECRET_KEY')
 RUB_TO_MINUTE_KOEF = 1 / 3
-
 
 FILE_UPLOAD_HANDLERS = [
     'django.core.files.uploadhandler.TemporaryFileUploadHandler',
@@ -173,8 +167,9 @@ S3_SECRET_KEY = os.getenv('S3_SECRET_KEY')
 S3_ACCESS_KEY = os.getenv('S3_ACCESS_KEY')
 S3_ENDPOINT_URL = os.getenv('S3_ENDPOINT_URL')
 S3_BUCKET_NAME = os.getenv('S3_BUCKET_NAME')
-
-
+API_HOST_URL = os.getenv('API_HOST_URL')
+NATS_SERVER_URL = os.getenv('NATS_SERVER_URL')
+QUEUE = os.getenv('QUEUE')
 
 LOG_FILE_PATH = os.path.join(BASE_DIR, 'logs', 'django.log')
 LOGGING = {
@@ -195,7 +190,6 @@ LOGGING = {
         },
     },
 }
-
 
 EMAIL_USE_TLS = True
 EMAIL_HOST = 'smtp.gmail.com'

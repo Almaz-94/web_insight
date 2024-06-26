@@ -38,25 +38,18 @@
                             <td>{{ object.get_script_display }}</td>
                             <td>{{ object.transcription_is_ready }}</td>
                             <td>{{ object.summary_is_ready }}</td>
-
                             <td>
                                 <a href="{% url 'main:summary_read' object.pk %}">
                                     <button type="button" class="btn btn-sm btn-outline-secondary">Подробнее</button>
                                 </a>
                             </td>
                         </tr>
-
                         {% endfor %}
                         </tbody>
-
-
                     </table>
                     </div>
                 </div>
             </div>
         </div>
-
     </div>
-
-</div>
 {% endblock %}

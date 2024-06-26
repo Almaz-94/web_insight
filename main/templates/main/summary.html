@@ -11,9 +11,9 @@
             <a href="#" class="navbar-brand d-flex align-items-center">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor"
                      stroke-linecap="round" stroke-linejoin="round" stroke-width="2" aria-hidden="true" class="me-2"
-                     viewBox="0 0 24 24">
-                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-                    <circle cx="12" cy="13" r="4"/>
+                     viewBox="0 0 24 24" style="margin: 5px">
+                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                    <circle cx="12" cy="13" r="4"></circle>
                 </svg>
                 <strong>Post</strong>
             </a>
@@ -24,52 +24,46 @@
 <main>
     <div class="album py-5 bg-body-tertiary">
         <div class="container">
-            <div class="center">
-                <div class="row">
-                    <div class="col-6">
-                        <div class="card shadow-sm">
-                            <div class="card mb-5 box-shadow">
-                                <div class="card-header">
-                                    <h3 class="card-title pricing-card-title">Запрос №{{ summary.pk }}</h3>
-                                </div>
-                                <div class="card-body">
-                                    {% if user.is_authenticated %}
-                                    <p class="card-text">Автор: {{ summary.user }}</p>
-                                    {% endif %}
-                                    <p class="card-text">Дата: {{ summary.date }}</p>
-                                    {% if summary.audio_file %}
-                                    <p class="card-text">Файл: {{ summary.audio_file|filename }}</p>
-                                    {% endif %}
-                                    {% if summary.youtube_link %}
-                                    <p class="card-text">Ссылка:
-                                        <a href="{{ summary.youtube_link }}" target="_blank">{{ summary.youtube_link }}</a>
-                                    </p>
-                                    {% endif %}
-                                    <p class="card-text">ИД запроса в ДБ воркера: {{ summary.worker_db_id }}</p>
-                                    <p class="card-text">Сценарий: {{ summary.get_script_display }}</p>
-                                    <p class="card-text">Транскрибация готова: {{ summary.transcription_is_ready }}</p>
-                                    <p class="card-text">Саммари готов: {{ summary.summary_is_ready }}</p>
-                                    {% if summary.transcription_is_ready %}
-                                    <p class="card-text">
-                                        <a href="{% url 'main:summary_download' pk=summary.pk %}">Скачать текст
-                                            саммари</a>
-                                    </p>
-                                    <p class="card-text">Транскрибация: {{ summary.transcription }}</p>
-                                    {% endif %}
-                                    {% if summary.summary_is_ready %}
-                                    <p class="card-text">Саммари: {{ summary.summary }}</p>
-                                    {% endif %}
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <div class="btn-group">
-                                        </div>
-                                    </div>
-                                </div>
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="card shadow-sm">
+                        <div class="card mb-5 box-shadow">
+                            <div class="card-header">
+                                <h3 class="card-title pricing-card-title">Запрос №{{ summary.pk }}</h3>
                             </div>
-
+                            <div class="card-body">
+                                {% if user.is_authenticated %}
+                                <p class="card-text">Автор: {{ summary.user }}</p>
+                                {% endif %}
+                                <p class="card-text">Дата: {{ summary.date }}</p>
+                                {% if summary.audio_file %}
+                                <p class="card-text">Файл: {{ summary.audio_file|filename }}</p>
+                                {% endif %}
+                                {% if summary.youtube_link %}
+                                <p class="card-text">Ссылка:
+                                    <a href="{{ summary.youtube_link }}" target="_blank">{{ summary.youtube_link }}</a>
+                                </p>
+                                {% endif %}
+                                <p class="card-text">ИД запроса в ДБ воркера: {{ summary.worker_db_id }}</p>
+                                <p class="card-text">Сценарий: {{ summary.get_script_display }}</p>
+                                <p class="card-text">Транскрибация готова: {{ summary.transcription_is_ready }}</p>
+                                <p class="card-text">Саммари готов: {{ summary.summary_is_ready }}</p>
+                                {% if summary.transcription_is_ready %}
+                                <p class="card-text">
+                                    <a href="{% url 'main:summary_download' pk=summary.pk %}">Скачать текст
+                                        саммари</a>
+                                </p>
+                                <p class="card-text">Транскрибация: {{ summary.transcription }}</p>
+                                {% endif %}
+                                {% if summary.summary_is_ready %}
+                                <p class="card-text">Саммари: {{ summary.summary }}</p>
+                                {% endif %}
+                            </div>
                         </div>
-
                     </div>
-                    <div class="col-6">
+                </div>
+                <div class="col-lg-6 col-md-12">
+                    <div id="player-container" class="text-center mb-4">
                         <div id="player"></div>
                     </div>
                 </div>
@@ -77,15 +71,14 @@
         </div>
     </div>
 </main>
-
 <script>
-    var videoId = '{{ summary.link|slice:"-11:" }}';
+    var videoId = '{{ summary.youtube_link|slice:"-11:" }}';
 
     var player;
     function onYouTubeIframeAPIReady() {
         player = new YT.Player('player', {
             height: '360',
-            width: '640',
+            width: '550',
             videoId: videoId,
             playerVars: {
                 'autoplay': 1,  // Autoplay the video
@@ -107,9 +100,6 @@
     function onPlayerStateChange(event) {
         // Do something when the player's state changes (e.g., video ends)
     }
-
-
-
 </script>
 
 {% endblock %}
