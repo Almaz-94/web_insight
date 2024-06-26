@@ -13,7 +13,7 @@ def validate_link_or_file(youtube_link, audio_file):
 
 
 def validate_youtube(youtube_link, time_left, error_message):
-    validate_youtube_url(youtube_link)
+    # validate_youtube_url(youtube_link)
     if get_youtube_video_duration(youtube_link) > time_left:
         raise ValidationError(error_message)
 
