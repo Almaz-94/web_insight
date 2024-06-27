@@ -38,6 +38,7 @@
                                 <p class="card-text">Дата: {{ summary.date }}</p>
                                 {% if summary.audio_file %}
                                 <p class="card-text">Файл: {{ summary.audio_file|filename }}</p>
+                                <p class="card-text">Ссылка: {{ summary.file_link_s3 }}</p>
                                 {% endif %}
                                 {% if summary.youtube_link %}
                                 <p class="card-text">Ссылка:

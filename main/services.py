@@ -6,6 +6,7 @@ import isodate
 import requests
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from requests import RequestException
 
 from main.s3 import S3Client
 
@@ -104,6 +105,45 @@ def get_media_duration_in_seconds(filepath):
 
 def get_all_assistants():
     host = settings.API_HOST_URL
-    response = requests.get(f'{host}/development/assistant/get_all').json()
-    assistants = [(str(elem['id']), elem['name']) for elem in response]
+    response = requests.get(f'{host}/assistants/get_all').json()
+    assistants = [(str(elem['assistant_id']), elem['name']) for elem in response]
     return tuple(assistants)
+
+def start_task_from_youtube(object):
+    host = settings.API_HOST_URL
+    url = host + '/start/start_process_from_youtube'
+    data = {
+        "user_id": object.user.id if object.user else None,
+        "youtube_url": object.youtube_link,
+        "assistant_id": object.script,  # Replace with actual assistant ID if available
+        "publisher_queue": "string",  # Replace with appropriate value
+        "source": "web",  # Replace with appropriate value
+        "user_prompt": object.prompt,  # Replace with appropriate value
+        "description": "string"
+    }
+    try:
+        response = requests.post(url, json=data)
+        response.raise_for_status()
+    except RequestException as e:
+        print(f'Ошибка отправки данных {e}')
+
+
+def start_task_from_storage(object):
+    host = settings.API_HOST_URL
+    url = host + '/start/start_process_from_s3'
+    data = {
+        "user_id": object.user.id if object.user else None,
+        "s3_path": object.file_link_s3,
+        "assistant_id": object.script,  # Replace with actual assistant ID if available
+        "publisher_queue": "string",  # Replace with appropriate value
+        "storage_url": object.file_link_s3,
+        "source": "web",  # Replace with appropriate value
+        "user_prompt": object.prompt,  # Replace with appropriate value
+        "description": "string"
+    }
+    try:
+        response = requests.post(url, json=data)
+        print(response.status_code)
+        response.raise_for_status()
+    except RequestException as e:
+        print(f'Ошибка отправки данных {e}')
