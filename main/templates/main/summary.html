@@ -39,6 +39,7 @@
                                 {% if summary.audio_file %}
                                 <p class="card-text">Файл: {{ summary.audio_file|filename }}</p>
                                 <p class="card-text">Ссылка: {{ summary.file_link_s3 }}</p>
+
                                 {% endif %}
                                 {% if summary.youtube_link %}
                                 <p class="card-text">Ссылка:
@@ -63,11 +64,21 @@
                         </div>
                     </div>
                 </div>
+                {% if summary.youtube_link %}
                 <div class="col-lg-6 col-md-12">
                     <div id="player-container" class="text-center mb-4">
                         <div id="player"></div>
                     </div>
                 </div>
+                {% else %}
+                <div class="col-lg-6 col-md-12">
+                    <h2>Выбранный файл</h2>
+                    <audio controls>
+                        <source src="{{ summary.file_link_s3 }}" type="audio/mpeg">
+                        Your browser does not support the audio element.
+                    </audio>
+                </div>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -101,6 +112,8 @@
     function onPlayerStateChange(event) {
         // Do something when the player's state changes (e.g., video ends)
     }
+
+
 </script>
 
 {% endblock %}

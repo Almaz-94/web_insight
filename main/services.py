@@ -1,9 +1,11 @@
 import re
 from tempfile import NamedTemporaryFile
 
+import aiohttp
 import ffmpeg
 import isodate
 import requests
+from aiohttp import ClientResponseError
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from requests import RequestException
@@ -109,30 +111,50 @@ def get_all_assistants():
     assistants = [(str(elem['assistant_id']), elem['name']) for elem in response]
     return tuple(assistants)
 
-def start_task_from_youtube(object):
+# def start_task_from_youtube(object):
+#     host = settings.API_HOST_URL
+#     url = host + '/start/start_process_from_youtube'
+#     data = {
+#         "user_id": object.user.id if object.user else None,
+#         "youtube_url": object.youtube_link,
+#         "assistant_id": object.script,  # Replace with actual assistant ID if available
+#         "publisher_queue": "string",  # Replace with appropriate value
+#         "source": "web",  # Replace with appropriate value
+#         "user_prompt": object.prompt,  # Replace with appropriate value
+#         "description": "string"
+#     }
+#     try:
+#         response = requests.post(url, json=data)
+#         response.raise_for_status()
+#     except RequestException as e:
+#         print(f'Ошибка отправки данных {e}')
+
+
+async def start_task_from_youtube(summary):
     host = settings.API_HOST_URL
-    url = host + '/start/start_process_from_youtube'
+    url = f"{host}/start/start_process_from_youtube"
     data = {
-        "user_id": object.user.id if object.user else None,
-        "youtube_url": object.youtube_link,
-        "assistant_id": object.script,  # Replace with actual assistant ID if available
-        "publisher_queue": "string",  # Replace with appropriate value
-        "source": "web",  # Replace with appropriate value
-        "user_prompt": object.prompt,  # Replace with appropriate value
+        "user_id": summary.user.id if summary.user else summary.session_key,
+        "youtube_url": summary.youtube_link,
+        "assistant_id": summary.script,
+        "publisher_queue": "string",
+        "source": "web",
+        "user_prompt": summary.prompt,
         "description": "string"
     }
     try:
-        response = requests.post(url, json=data)
-        response.raise_for_status()
-    except RequestException as e:
-        print(f'Ошибка отправки данных {e}')
+        async with aiohttp.ClientSession() as session:
+            async with session.post(url, json=data) as response:
+                response.raise_for_status()
+    except aiohttp.ClientError as e:
+        print(f'Error sending data: {e}')
 
 
-def start_task_from_storage(object):
+async def start_task_from_storage(object):
     host = settings.API_HOST_URL
-    url = host + '/start/start_process_from_s3'
+    url = f"{host}/start/start_process_from_s3"
     data = {
-        "user_id": object.user.id if object.user else None,
+        "user_id": object.user.id if object.user else object.session_key,
         "s3_path": object.file_link_s3,
         "assistant_id": object.script,  # Replace with actual assistant ID if available
         "publisher_queue": "string",  # Replace with appropriate value
@@ -142,8 +164,36 @@ def start_task_from_storage(object):
         "description": "string"
     }
     try:
-        response = requests.post(url, json=data)
-        print(response.status_code)
-        response.raise_for_status()
+        async with aiohttp.ClientSession() as session:
+            async with session.post(url, json=data) as response:
+                response.raise_for_status()
+
     except RequestException as e:
         print(f'Ошибка отправки данных {e}')
+    except ClientResponseError as e:
+        print(f'ClientResponseError: {e.status}, message={e.message}, url={e.request_info.url}')
+    except aiohttp.ClientError as e:
+        print(f'aiohttp.ClientError: {e}')
+    except Exception as e:
+        print(f'Error sending data: {e}')
+
+
+# def start_task_from_storage(object):
+#     host = settings.API_HOST_URL
+#     url = f"{host}/start/start_process_from_s3"
+#     data = {
+#         "user_id": object.user.id if object.user else None,
+#         "s3_path": object.file_link_s3,
+#         "assistant_id": object.script,  # Replace with actual assistant ID if available
+#         "publisher_queue": "string",  # Replace with appropriate value
+#         "storage_url": object.file_link_s3,
+#         "source": "web",  # Replace with appropriate value
+#         "user_prompt": object.prompt,  # Replace with appropriate value
+#         "description": "string"
+#     }
+#     try:
+#         response = requests.post(url, json=data)
+#         print(response.status_code)
+#         response.raise_for_status()
+#     except RequestException as e:
+#         print(f'Ошибка отправки данных {e}')

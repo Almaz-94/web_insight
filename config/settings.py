@@ -66,7 +66,7 @@ ROOT_URLCONF = 'config.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -171,25 +171,25 @@ API_HOST_URL = os.getenv('API_HOST_URL')
 NATS_SERVER_URL = os.getenv('NATS_SERVER_URL')
 QUEUE = os.getenv('QUEUE')
 
-LOG_FILE_PATH = os.path.join(BASE_DIR, 'logs', 'django.log')
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'handlers': {
-        'file': {
-            'level': 'DEBUG',
-            'class': 'logging.FileHandler',
-            'filename': LOG_FILE_PATH,  # Specify the path to your log file
-        },
-    },
-    'loggers': {
-        'django': {
-            'handlers': ['file'],
-            'level': 'DEBUG',
-            'propagate': True,
-        },
-    },
-}
+# LOG_FILE_PATH = os.path.join(BASE_DIR, 'logs', 'django.log')
+# LOGGING = {
+#     'version': 1,
+#     'disable_existing_loggers': False,
+#     'handlers': {
+#         'file': {
+#             'level': 'DEBUG',
+#             'class': 'logging.FileHandler',
+#             'filename': LOG_FILE_PATH,  # Specify the path to your log file
+#         },
+#     },
+#     'loggers': {
+#         'django': {
+#             'handlers': ['file'],
+#             'level': 'DEBUG',
+#             'propagate': True,
+#         },
+#     },
+# }
 
 EMAIL_USE_TLS = True
 EMAIL_HOST = 'smtp.gmail.com'
