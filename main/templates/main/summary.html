@@ -39,7 +39,6 @@
                                 {% if summary.audio_file %}
                                 <p class="card-text">Файл: {{ summary.audio_file|filename }}</p>
                                 <p class="card-text">Ссылка: {{ summary.file_link_s3 }}</p>
-
                                 {% endif %}
                                 {% if summary.youtube_link %}
                                 <p class="card-text">Ссылка:
@@ -85,18 +84,18 @@
 </main>
 <script>
     var videoId = '{{ summary.youtube_link|slice:"-11:" }}';
-
     var player;
+
     function onYouTubeIframeAPIReady() {
         player = new YT.Player('player', {
             height: '360',
             width: '550',
             videoId: videoId,
             playerVars: {
-                'autoplay': 1,  // Autoplay the video
-                'controls': 1,  // Show player controls
-                'rel': 0,       // Hide related videos at the end of playback
-                'showinfo': 0   // Hide video title and player actions
+                'autoplay': 0,
+                'controls': 1,
+                'rel': 0,
+                'showinfo': 0
             },
             events: {
                 'onReady': onPlayerReady,
@@ -113,7 +112,16 @@
         // Do something when the player's state changes (e.g., video ends)
     }
 
-
+    // Ensure the API script is loaded
+    if (typeof YT === 'undefined' || typeof YT.Player === 'undefined') {
+        var tag = document.createElement('script');
+        tag.src = "https://www.youtube.com/iframe_api";
+        var firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+    } else {
+        // API already loaded, manually call the onYouTubeIframeAPIReady function
+        onYouTubeIframeAPIReady();
+    }
 </script>
 
 {% endblock %}

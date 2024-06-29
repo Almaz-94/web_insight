@@ -25,7 +25,7 @@ def get_s3_client():
 def get_user_time(user):
     if user and user.is_authenticated:
         time_left = user.time_left
-        error_message = f"Видео превышает по длине Ваше доступное время ({time_left} минута)"
+        error_message = f"Видео превышает по длине Ваше доступное время ({time_left} мин)"
     else:
         time_left = settings.ALLOWED_TIME_UNAUTH_USER
         error_message = f"Неавторизованные пользователи могут загружать видео продолжительностью " \
@@ -156,11 +156,11 @@ async def start_task_from_storage(object):
     data = {
         "user_id": object.user.id if object.user else object.session_key,
         "s3_path": object.file_link_s3,
-        "assistant_id": object.script,  # Replace with actual assistant ID if available
-        "publisher_queue": "string",  # Replace with appropriate value
+        "assistant_id": object.script,
+        "publisher_queue": "string",
         "storage_url": object.file_link_s3,
-        "source": "web",  # Replace with appropriate value
-        "user_prompt": object.prompt,  # Replace with appropriate value
+        "source": "web",
+        "user_prompt": object.prompt,
         "description": "string"
     }
     try:

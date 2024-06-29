@@ -87,22 +87,26 @@ class SummaryCreateView(CreateView):
         user.save()
 
 
-async def render_async(request, template_name, context=None):
-    if context is None:
-        context = {}
-    return await sync_to_async(render)(request, template_name, context)
-
 class SummaryCreateAsyncView(View):
     template_name = 'main/request_summary.html'
 
+    def get_context_data(self, **kwargs):
+        context = kwargs
+        context['ALLOWED_TIME_UNAUTH_USER'] = settings.ALLOWED_TIME_UNAUTH_USER
+        return context
+
+    async def render_async(self, request, context=None):
+        if context is None:
+            context = {}
+        context = self.get_context_data(**context)
+        return await sync_to_async(render)(request, self.template_name, context)
+
     async def get(self, request, *args, **kwargs):
         form = SummaryForm(user=request.user)
-        # user_is_authenticated = await sync_to_async(lambda: request.user.is_authenticated)()
         context = {
             'form': form,
-            # 'user_is_authenticated': user_is_authenticated,
         }
-        return await render_async(request, self.template_name, context)
+        return await self.render_async(request, context)
 
     async def post(self, request, *args, **kwargs):
         if not request.session.session_key:
@@ -124,12 +128,10 @@ class SummaryCreateAsyncView(View):
             await self.update_user_time_left(request.user, form)
             return redirect(reverse_lazy('main:summary_read', kwargs={'pk': summary.pk}))
         else:
-            # user_is_authenticated = await sync_to_async(lambda: request.user.is_authenticated)()
             context = {
                 'form': form,
-                # 'user_is_authenticated': user_is_authenticated,
             }
-            return await render_async(request, self.template_name, context)
+            return await self.render_async(request, context)
 
     @sync_to_async
     def save_form(self, form):
@@ -151,9 +153,8 @@ class SummaryCreateAsyncView(View):
 
     @sync_to_async
     def update_user_time_left(self, user, form):
-        if not user:
+        if not user.is_authenticated:
             return
-
         if form.cleaned_data['audio_file']:
             video_length = get_audio_duration(form.cleaned_data['audio_file'])
         elif form.cleaned_data['youtube_link']:
@@ -192,6 +193,7 @@ class SummaryDetailView(DetailView):
             raise Http404
 
         return self.object
+
 
 
 class SummaryDownloadView(DetailView):
