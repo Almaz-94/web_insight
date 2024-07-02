@@ -1,0 +1,241 @@
+{% load static %}
+{% load show_filename %}
+<!DOCTYPE HTML>
+<!--
+	Solid State by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+<head>
+    <title>Generic - Solid State by HTML5 UP</title>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no"/>
+    <link rel="stylesheet" href="{% static 'assets/css/main.css' %}"/>
+    <noscript>
+        <link rel="stylesheet" href="{% static 'assets/css/noscript.css' %}"/>
+    </noscript>
+</head>
+<body class="is-preload">
+
+<!-- Page Wrapper -->
+<div id="page-wrapper">
+
+    <!-- Header -->
+    <header id="header">
+        <h1><a href="{% url 'main:home2' %}">Insight</a></h1>
+        <nav>
+            <a href="#menu">Menu</a>
+        </nav>
+    </header>
+
+    <!-- Menu -->
+    <nav id="menu">
+        <div class="inner">
+            <h2>Menu</h2>
+            <ul class="links">
+                <li><a href="{% url 'main:home2' %}">Главная</a></li>
+                <li><a href="{% url 'main:request_summary' %}">Начать работу</a></li>
+                <li><a href="{% url 'main:faq' %}">FAQ</a></li>
+                <li><a href="{% url 'main:home2elements' %}">Elements</a></li>
+                <li><a href="{% url 'main:home2generic' %}">Generic</a></li>
+                {% if user.is_authenticated %}
+                <li><a href="{% url 'user:profile' request.user.pk %}">Профиль</a></li>
+
+                <!-- Form for logout -->
+                <form id="logout-form" method="post" action="{% url 'user:logout' %}" style="display:none;">
+                    {% csrf_token %}
+                </form>
+
+                <!-- Link that triggers the form submission -->
+                <li>
+                    <a href="#" onclick="document.getElementById('logout-form').submit();"
+                       class="p-2 btn btn-outline-primary">
+                        Выход
+                    </a>
+                </li>
+                {% else %}
+                <li><a href="{% url 'user:login' %}">Вход</a></li>
+                <li><a href="{% url 'user:register' %}">Регистрация</a></li>
+                {% endif %}
+            </ul>
+            <a href="#" class="close">Close</a>
+        </div>
+    </nav>
+    <!-- Wrapper -->
+    <section id="wrapper">
+        <header>
+            <div class="inner">
+                <h2>Информация по запросу №{{ summary.pk }}.</h2>
+                {% if user.is_authenticated %}
+                <h4 class="my-0 font-weight-normal">Доступное вам время {{ user.time_left }} мин.</h4>
+                {% else %}
+                <h4 class="my-0 font-weight-normal">Доступное вам время {{ ALLOWED_TIME_UNAUTH_USER }}
+                    минут </h4>
+                {% endif %}
+            </div>
+        </header>
+
+        <!-- Content -->
+        <div class="wrapper">
+            <div class="inner">
+                <div class="row"> <!-- Added row here -->
+                    <div class="col-lg-6">
+                        <div class="" style="align-content: center">
+                            <div class="card mb-7 box-shadow">
+                                <div class="card-header">
+                                    <h3 class="card-title pricing-card-title">Запрос №{{ summary.pk }}</h3>
+                                </div>
+                                <div class="card-body">
+                                    {% if user.is_authenticated %}
+                                    <p class="card-text">Автор: {{ summary.user }}</p>
+                                    {% endif %}
+                                    <p class="card-text">Дата: {{ summary.date }}</p>
+                                    {% if summary.audio_file %}
+                                    <p class="card-text">Файл: {{ summary.audio_file|filename }}</p>
+                                    <p class="card-text">Ссылка: {{ summary.file_link_s3 }}</p>
+                                    {% endif %}
+                                    {% if summary.youtube_link %}
+                                    <p class="card-text">Ссылка:
+                                        <a href="{{ summary.youtube_link }}" target="_blank">{{ summary.youtube_link}}</a>
+                                    </p>
+                                    {% endif %}
+                                    <p class="card-text">ИД запроса в ДБ воркера: {{ summary.worker_db_id }}</p>
+                                    <p class="card-text">Сценарий: {{ summary.get_script_display }}</p>
+                                    <p class="card-text">Транскрибация готова: {{ summary.transcription_is_ready }}</p>
+                                    <p class="card-text">Саммари готов: {{ summary.summary_is_ready }}</p>
+                                    {% if summary.transcription_is_ready %}
+                                    <p class="card-text">
+                                        <a href="{% url 'main:summary_download' pk=summary.pk %}">Скачать текст
+                                            саммари</a>
+                                    </p>
+                                    <p class="card-text">Транскрибация: {{ summary.transcription }}</p>
+                                    {% endif %}
+                                    {% if summary.summary_is_ready %}
+                                    <p class="card-text">Саммари: {{ summary.summary }}</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 col-md-12">
+                        {% if summary.youtube_link %}
+                        <div id="player-container" class="text-center mb-4">
+                            <div id="player"></div>
+                        </div>
+                        {% else %}
+                        <h2>Выбранный файл</h2>
+                        <audio controls>
+                            <source src="{{ summary.file_link_s3 }}" type="audio/mpeg">
+                            Your browser does not support the audio element.
+                        </audio>
+                        {% endif %}
+                    </div>
+                </div> <!-- End of row -->
+            </div>
+        </div>
+
+
+    </section>
+    <script>
+    var videoId = '{{ summary.youtube_link|slice:"-11:" }}';
+    var player;
+
+    function onYouTubeIframeAPIReady() {
+        player = new YT.Player('player', {
+            height: '360',
+            width: '550',
+            videoId: videoId,
+            playerVars: {
+                'autoplay': 0,
+                'controls': 1,
+                'rel': 0,
+                'showinfo': 0
+            },
+            events: {
+                'onReady': onPlayerReady,
+                'onStateChange': onPlayerStateChange
+            }
+        });
+    }
+
+    function onPlayerReady(event) {
+        // Do something when the player is ready
+    }
+
+    function onPlayerStateChange(event) {
+        // Do something when the player's state changes (e.g., video ends)
+    }
+
+    // Ensure the API script is loaded
+    if (typeof YT === 'undefined' || typeof YT.Player === 'undefined') {
+        var tag = document.createElement('script');
+        tag.src = "https://www.youtube.com/iframe_api";
+        var firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+    } else {
+        // API already loaded, manually call the onYouTubeIframeAPIReady function
+        onYouTubeIframeAPIReady();
+    }
+
+
+
+
+    </script>
+    <!-- Footer -->
+    <section id="footer">
+        <div class="inner">
+            <h2 class="major">Get in touch</h2>
+            <p>Cras mattis ante fermentum, malesuada neque vitae, eleifend erat. Phasellus non pulvinar erat. Fusce
+                tincidunt, nisl eget mattis egestas, purus ipsum consequat orci, sit amet lobortis lorem lacus in
+                tellus. Sed ac elementum arcu. Quisque placerat auctor laoreet.</p>
+            <form method="post" action="#">
+                <div class="fields">
+                    <div class="field">
+                        <label for="name">Name</label>
+                        <input type="text" name="name" id="name"/>
+                    </div>
+                    <div class="field">
+                        <label for="email">Email</label>
+                        <input type="email" name="email" id="email"/>
+                    </div>
+                    <div class="field">
+                        <label for="message">Message</label>
+                        <textarea name="message" id="message" rows="4"></textarea>
+                    </div>
+                </div>
+                <ul class="actions">
+                    <li><input type="submit" value="Send Message"/></li>
+                </ul>
+            </form>
+            <ul class="contact">
+                <li class="icon solid fa-home">
+                    Untitled Inc<br/>
+                    1234 Somewhere Road Suite #2894<br/>
+                    Nashville, TN 00000-0000
+                </li>
+                <li class="icon solid fa-phone">(000) 000-0000</li>
+                <li class="icon solid fa-envelope"><a href="#">information@untitled.tld</a></li>
+                <li class="icon brands fa-twitter"><a href="#">twitter.com/untitled-tld</a></li>
+                <li class="icon brands fa-facebook-f"><a href="#">facebook.com/untitled-tld</a></li>
+                <li class="icon brands fa-instagram"><a href="#">instagram.com/untitled-tld</a></li>
+            </ul>
+            <ul class="copyright">
+                <li>&copy; Untitled Inc. All rights reserved.</li>
+                <li>Design: <a href="http://html5up.net">HTML5 UP</a></li>
+            </ul>
+        </div>
+    </section>
+
+</div>
+
+<!-- Scripts -->
+<script src="{% static 'assets/js/jquery.min.js' %}"></script>
+<script src="{% static 'assets/js/jquery.scrollex.min.js' %}"></script>
+<script src="{% static 'assets/js/browser.min.js' %}"></script>
+<script src="{% static 'assets/js/breakpoints.min.js' %}"></script>
+<script src="{% static 'assets/js/util.js' %}"></script>
+<script src="{% static 'assets/js/main.js' %}"></script>
+
+</body>
+</html>

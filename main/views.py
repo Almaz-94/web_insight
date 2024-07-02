@@ -19,6 +19,22 @@ from main.services import get_youtube_video_duration, get_audio_duration, get_s3
 logger = logging.getLogger(__name__)
 
 
+class Home(TemplateView):
+    template_name = 'main/index.html'
+
+class Home2generic(TemplateView):
+    template_name = 'main/generic2.html'
+
+
+class Home2elements(TemplateView):
+    template_name = 'main/elements2.html'
+
+
+class Home2(TemplateView):
+    template_name = 'main/index2.html'
+
+
+
 class SummaryCreateView(CreateView):
     model = Summary
     form_class = SummaryForm
@@ -88,7 +104,7 @@ class SummaryCreateView(CreateView):
 
 
 class SummaryCreateAsyncView(View):
-    template_name = 'main/request_summary.html'
+    template_name = 'main/request_summary2.html'
 
     def get_context_data(self, **kwargs):
         context = kwargs
@@ -183,7 +199,7 @@ class SummaryListView(ListView):
 class SummaryDetailView(DetailView):
     context_object_name = 'summary'
     model = Summary
-    template_name = 'main/summary.html'
+    template_name = 'main/summary2.html'
 
     def get_object(self, queryset=None):
         self.object = super().get_object(queryset)
@@ -210,4 +226,4 @@ class SummaryDownloadView(DetailView):
 
 
 class FAQView(TemplateView):
-    template_name = 'main/FAQ.html'
+    template_name = 'main/faq2.html'

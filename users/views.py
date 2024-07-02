@@ -16,9 +16,9 @@ from users.models import User
 
 
 class LoginView(BaseLoginView):
-    template_name = 'users/login.html'
+    template_name = 'users/login2.html'
     form_class = UserLoginForm
-    success_url = reverse_lazy('main:request_summary')
+    success_url = reverse_lazy('main:request_summary2')
 
 
 class PasswordRecoveryView(FormView):
@@ -50,7 +50,7 @@ class PasswordRecoveryView(FormView):
 class RegisterView(CreateView):
     model = User
     form_class = UserRegisterForm
-    template_name = 'users/register.html'
+    template_name = 'users/register2.html'
     success_url = reverse_lazy('user:verification')
 
     def form_valid(self, form):
@@ -89,6 +89,7 @@ class VerificationFormView(FormView):
 class UserProfileView(LoginRequiredMixin, DetailView):
     context_object_name = 'user'
     model = User
+    template_name = 'users/user_detail2.html'
 
 
 class UserDeleteView(DeleteView):
