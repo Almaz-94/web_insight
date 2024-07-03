@@ -134,17 +134,19 @@ async def start_task_from_youtube(summary):
     host = settings.API_HOST_URL
     url = f"{host}/start/start_process_from_youtube"
     data = {
+        "unique_id": "unique_id",
         "user_id": summary.user.id if summary.user else summary.session_key,
         "youtube_url": summary.youtube_link,
-        "assistant_id": summary.script,
-        "publisher_queue": "string",
+        "assistant_id": int(summary.script),
+        "publisher_queue": settings.QUEUE,
         "source": "web",
         "user_prompt": summary.prompt,
         "description": "string"
     }
+    headers = {"accept": "application/json", "Content-Type": "application/json"}
     try:
         async with aiohttp.ClientSession() as session:
-            async with session.post(url, json=data) as response:
+            async with session.post(url, json=data, headers=headers) as response:
                 response.raise_for_status()
     except aiohttp.ClientError as e:
         print(f'Error sending data: {e}')

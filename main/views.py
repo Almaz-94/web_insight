@@ -1,6 +1,5 @@
 import asyncio
 import logging
-import tempfile
 
 from asgiref.sync import sync_to_async
 from django.conf import settings
@@ -15,12 +14,14 @@ from main.forms import SummaryForm
 from main.models import Summary
 from main.services import get_youtube_video_duration, get_audio_duration, get_s3_client, start_task_from_youtube, \
     start_task_from_storage
+from main.utils.listener import received_transcribed_id
 
 logger = logging.getLogger(__name__)
 
 
 class Home(TemplateView):
     template_name = 'main/index.html'
+
 
 class Home2generic(TemplateView):
     template_name = 'main/generic2.html'
@@ -32,7 +33,6 @@ class Home2elements(TemplateView):
 
 class Home2(TemplateView):
     template_name = 'main/index2.html'
-
 
 
 class SummaryCreateView(CreateView):
@@ -67,7 +67,6 @@ class SummaryCreateView(CreateView):
         self.update_user_time_left(user, form)
         return response
 
-
     def get_user(self, form):
         if self.request.user.is_authenticated:
             form.instance.user = self.request.user
@@ -81,7 +80,8 @@ class SummaryCreateView(CreateView):
         #     for chunk in audio_file.chunks():
         #         temp_file.write(chunk)
         #     temp_file_path = temp_file.name
-        temp_file_path = 'media/'+audio_file.name
+        temp_file_path = 'media/' + audio_file.name
+
         async def upload_and_get_url():
             await s3_client.upload_file(temp_file_path)
             return await s3_client.generate_presigned_url(temp_file_path.split('/')[-1])
@@ -133,13 +133,9 @@ class SummaryCreateAsyncView(View):
             summary = await self.save_form(form)
             s3_client = get_s3_client()
 
-            if form.cleaned_data['audio_file']:
-                file_url = await self.handle_audio_file_upload(summary.audio_file, s3_client)
-                summary.file_link_s3 = file_url
-                await sync_to_async(summary.save)()
-                await start_task_from_storage(summary)
-            elif form.cleaned_data['youtube_link']:
-                await start_task_from_youtube(summary)
+            await start_task_from_youtube(summary)
+
+            await received_transcribed_id()
 
             await self.update_user_time_left(request.user, form)
             return redirect(reverse_lazy('main:summary_read', kwargs={'pk': summary.pk}))
@@ -181,11 +177,13 @@ class SummaryCreateAsyncView(View):
         user.time_left -= video_length
         user.save()
 
+
 class SummaryListView(ListView):
     context_object_name = 'summary_requests'
     model = Summary
     template_name = 'main/summary_list.html'
     ordering = ['-date']
+
     def get_queryset(self):
         queryset = super().get_queryset()
         if self.request.user.is_authenticated:
