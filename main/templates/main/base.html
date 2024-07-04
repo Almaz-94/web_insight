@@ -32,8 +32,6 @@
                 <li><a href="{% url 'main:request_summary' %}">Начать работу</a></li>
                 <li><a href="{% url 'main:faq' %}">FAQ</a></li>
                 <li><a href="{% url 'main:summary_list' %}">История запросов</a></li>
-                <li><a href="{% url 'main:home2elements' %}">Elements</a></li>
-                <li><a href="{% url 'main:home2generic' %}">Generic</a></li>
                 <li><a href="https://tally.so/r/nPOeRd" target="_blank">Обратная связь</a></li>
                 {% if user.is_authenticated %}
                 <li><a href="{% url 'user:profile' request.user.pk %}">Профиль</a></li>
