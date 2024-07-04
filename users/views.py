@@ -54,20 +54,20 @@ class RegisterView(CreateView):
     success_url = reverse_lazy('user:login')
     # success_url = reverse_lazy('user:verification')
 
-    def form_valid(self, form):
-        new_user = form.save()
-        new_user.is_active = False
-        ver_num = randint(1000, 1000000)
-        new_user.verification_code = ver_num
-        new_user.save()
-        send_mail(
-            subject='Account activation',
-            message=f'Your activation code : {ver_num}',
-            from_email=settings.EMAIL_HOST_USER,
-            recipient_list=[new_user.email],
-            fail_silently=False
-        )
-        return super().form_valid(form)
+    # def form_valid(self, form):
+    #     new_user = form.save()
+    #     new_user.is_active = False
+    #     ver_num = randint(1000, 1000000)
+    #     new_user.verification_code = ver_num
+    #     new_user.save()
+    #     send_mail(
+    #         subject='Account activation',
+    #         message=f'Your activation code : {ver_num}',
+    #         from_email=settings.EMAIL_HOST_USER,
+    #         recipient_list=[new_user.email],
+    #         fail_silently=False
+    #     )
+    #     return super().form_valid(form)
 
 
 class VerificationFormView(FormView):
