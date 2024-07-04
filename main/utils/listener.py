@@ -51,7 +51,7 @@ def listen(server, queue):
 
 
 @listen(server=settings.NATS_SERVER_URL, queue=f"{settings.QUEUE}")
-async def received_transcribed_id(msg: Msg):
+async def received_transcribed_id(msg: Msg) -> int:
     try:
         # Преобразуем входную строку JSON с одинарными кавычками в правильный формат с двойными кавычками
         raw_data = msg.data.decode()
