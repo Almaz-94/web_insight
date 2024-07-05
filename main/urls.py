@@ -1,7 +1,7 @@
 from django.urls import path
 
 from main.apps import MainConfig
-from main.views import SummaryCreateView, SummaryListView, SummaryDetailView, SummaryDownloadView, FAQView, \
+from main.views import SummaryListView, SummaryDetailView, SummaryDownloadView, FAQView, \
     SummaryCreateAsyncView, Home, Home2, Home2generic, Home2elements
 
 app_name = MainConfig.name

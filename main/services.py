@@ -6,19 +6,19 @@ import ffmpeg
 import isodate
 import requests
 from aiohttp import ClientResponseError
-from django.conf import settings
 from django.core.exceptions import ValidationError
 from requests import RequestException
 
+from config_data.configs import settings
 from main.s3 import S3Client
 
 
 def get_s3_client():
     return S3Client(
-        access_key=settings.S3_ACCESS_KEY,
-        secret_key=settings.S3_SECRET_KEY,
-        endpoint_url=settings.S3_ENDPOINT_URL,
-        bucket_name=settings.S3_BUCKET_NAME,
+        access_key=settings.s3_config.access_key,
+        secret_key=settings.s3_config.secret_key,
+        endpoint_url=settings.s3_config.endpoint_url,
+        bucket_name=settings.s3_config.bucket_name,
     )
 
 
@@ -42,7 +42,7 @@ def extract_video_id(url):
 
 def get_youtube_video_duration(youtube_link) -> int:
     video_id = extract_video_id(youtube_link)
-    api_key = settings.YOUTUBE_API_KEY
+    api_key = settings.youtube_api.youtube_api_key
     url = f'https://www.googleapis.com/youtube/v3/videos?id={video_id}&part=contentDetails&key={api_key}'
     response = requests.get(url)
     if response.status_code == 200:
@@ -68,24 +68,6 @@ def get_audio_duration(file):
     return duration
 
 
-#
-# async def get_media_duration_in_seconds(filepath):
-#     """
-#     Извлекает длину медиафайла (видео или аудио) из метаданных и возвращает её в секундах.
-#
-#     Args:
-#         filepath: Путь к медиафайлу.
-#
-#     Returns:
-#         Длительность медиафайла в секундах.
-#     """
-#     probe = await asyncio.to_thread(ffmpeg.probe, filepath)
-#     format_info = probe["format"]
-#     duration_sec = float(format_info["duration"])
-#
-#     print(f"Длина медиафайла: {duration_sec:.2f} секунд(ы)")
-#     return duration_sec
-
 def get_media_duration_in_seconds(filepath):
     """
     Извлекает длину медиафайла (видео или аудио) из метаданных и возвращает её в секундах.
@@ -106,39 +88,23 @@ def get_media_duration_in_seconds(filepath):
 
 
 def get_all_assistants():
-    host = settings.API_HOST_URL
-    response = requests.get(f'{host}/assistants/get_all').json()
+    host = settings.api_config.api_host_url
+    url = f'{host}{settings.api_config.get_all_assistant}'
+    response = requests.get(url).json()
     assistants = [(str(elem['assistant_id']), elem['name']) for elem in response]
     return tuple(assistants)
 
-# def start_task_from_youtube(object):
-#     host = settings.API_HOST_URL
-#     url = host + '/start/start_process_from_youtube'
-#     data = {
-#         "user_id": object.user.id if object.user else None,
-#         "youtube_url": object.youtube_link,
-#         "assistant_id": object.script,  # Replace with actual assistant ID if available
-#         "publisher_queue": "string",  # Replace with appropriate value
-#         "source": "web",  # Replace with appropriate value
-#         "user_prompt": object.prompt,  # Replace with appropriate value
-#         "description": "string"
-#     }
-#     try:
-#         response = requests.post(url, json=data)
-#         response.raise_for_status()
-#     except RequestException as e:
-#         print(f'Ошибка отправки данных {e}')
-
 
 async def start_task_from_youtube(summary):
-    host = settings.API_HOST_URL
-    url = f"{host}/start/start_process_from_youtube"
+    host = settings.api_config.api_host_url
+    endpoint = settings.api_config.start_youtube_process
+    url = host + endpoint
     data = {
         "unique_id": "unique_id",
         "user_id": summary.user.id if summary.user else summary.session_key,
         "youtube_url": summary.youtube_link,
         "assistant_id": int(summary.script),
-        "publisher_queue": settings.QUEUE,
+        "publisher_queue": settings.nats_listener.nats_queue,
         "source": "web",
         "user_prompt": summary.prompt,
         "description": "string"
@@ -153,13 +119,14 @@ async def start_task_from_youtube(summary):
 
 
 async def start_task_from_storage(object):
-    host = settings.API_HOST_URL
-    url = f"{host}/start/start_process_from_s3"
+    host = settings.api_config.api_host_url
+    endpoint = settings.api_config.start_s3_process
+    url = host + endpoint
     data = {
         "user_id": object.user.id if object.user else object.session_key,
         "s3_path": object.file_link_s3,
         "assistant_id": object.script,
-        "publisher_queue": "string",
+        "publisher_queue": settings.nats_listener.nats_queue,
         "storage_url": object.file_link_s3,
         "source": "web",
         "user_prompt": object.prompt,
@@ -178,24 +145,3 @@ async def start_task_from_storage(object):
         print(f'aiohttp.ClientError: {e}')
     except Exception as e:
         print(f'Error sending data: {e}')
-
-
-# def start_task_from_storage(object):
-#     host = settings.API_HOST_URL
-#     url = f"{host}/start/start_process_from_s3"
-#     data = {
-#         "user_id": object.user.id if object.user else None,
-#         "s3_path": object.file_link_s3,
-#         "assistant_id": object.script,  # Replace with actual assistant ID if available
-#         "publisher_queue": "string",  # Replace with appropriate value
-#         "storage_url": object.file_link_s3,
-#         "source": "web",  # Replace with appropriate value
-#         "user_prompt": object.prompt,  # Replace with appropriate value
-#         "description": "string"
-#     }
-#     try:
-#         response = requests.post(url, json=data)
-#         print(response.status_code)
-#         response.raise_for_status()
-#     except RequestException as e:
-#         print(f'Ошибка отправки данных {e}')

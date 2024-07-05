@@ -209,12 +209,12 @@ function getRoot(node) {
 }
 
 /**
- * Finds the offset parent common to the two provided nodes
+ * Finds the offset parent config_data to the two provided nodes
  * @method
  * @memberof Popper.Utils
  * @argument {Element} element1
  * @argument {Element} element2
- * @returns {Element} common offset parent
+ * @returns {Element} config_data offset parent
  */
 function findCommonOffsetParent(element1, element2) {
   // This check is needed to avoid errors in case one of the elements isn't defined for any reason
@@ -227,7 +227,7 @@ function findCommonOffsetParent(element1, element2) {
   var start = order ? element1 : element2;
   var end = order ? element2 : element1;
 
-  // Get common ancestor container
+  // Get config_data ancestor container
   var range = document.createRange();
   range.setStart(start, 0);
   range.setEnd(end, 0);

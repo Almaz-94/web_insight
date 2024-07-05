@@ -91,7 +91,7 @@ DATABASES = {
         'NAME': os.getenv('POSTGRES_DB'),
         'PASSWORD': os.getenv('POSTGRES_PASSWORD'),
         'USER': os.getenv('POSTGRES_USER'),
-        'HOST': os.getenv('HOST'),
+        'HOST': os.getenv('POSTGRES_HOST'),
         'PORT': os.getenv('POSTGRES_PORT', '5432'),
     }
 }
@@ -147,7 +147,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-YOUTUBE_API_KEY = os.getenv('YOUTUBE_API_KEY')
 ALLOWED_TIME_UNAUTH_USER = 10
 SUPPORTED_EXTENSIONS = ['m4a', 'm4b', 'm4p', 'm4r', 'mp3', 'aac', 'ac3', 'wav', 'alac',
                         'flac', 'flv', 'wma', 'amr', 'mpga', 'ogg', 'oga', 'mogg',
@@ -163,34 +162,6 @@ RUB_TO_MINUTE_KOEF = 1 / 3
 FILE_UPLOAD_HANDLERS = [
     'django.core.files.uploadhandler.TemporaryFileUploadHandler',
 ]
-
-S3_SECRET_KEY = os.getenv('S3_SECRET_KEY')
-S3_ACCESS_KEY = os.getenv('S3_ACCESS_KEY')
-S3_ENDPOINT_URL = os.getenv('S3_ENDPOINT_URL')
-S3_BUCKET_NAME = os.getenv('S3_BUCKET_NAME')
-API_HOST_URL = os.getenv('API_HOST_URL')
-NATS_SERVER_URL = os.getenv('NATS_SERVER_URL')
-QUEUE = os.getenv('QUEUE')
-
-# LOG_FILE_PATH = os.path.join(BASE_DIR, 'logs', 'django.log')
-# LOGGING = {
-#     'version': 1,
-#     'disable_existing_loggers': False,
-#     'handlers': {
-#         'file': {
-#             'level': 'DEBUG',
-#             'class': 'logging.FileHandler',
-#             'filename': LOG_FILE_PATH,  # Specify the path to your log file
-#         },
-#     },
-#     'loggers': {
-#         'django': {
-#             'handlers': ['file'],
-#             'level': 'DEBUG',
-#             'propagate': True,
-#         },
-#     },
-# }
 
 EMAIL_USE_TLS = True
 EMAIL_HOST = 'smtp.gmail.com'
