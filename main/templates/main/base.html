@@ -1,56 +1,116 @@
 {% load static %}
 <!doctype html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{title}}</title>
-    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+    <title>Solid State by HTML5 UP</title>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no"/>
+    <link rel="stylesheet" href="{% static 'assets/css/main.css' %}"/>
+    <noscript>
+        <link rel="stylesheet" href="{% static 'assets/css/noscript.css' %}"/>
+    </noscript>
 </head>
-<body>
+<body class="is-preload">
 
-{% include 'main/includes/inc_sub_template.html' %}
+<!-- Page Wrapper -->
+<div id="page-wrapper">
 
-<div class="pricing-header px-3 py-3 pt-md-1 pb-md-4 mx-auto text-center">
-    <h1 class="display-4">Insight</h1>
-    <p class="lead">Insighter – твой новый помощник в мире деловых коммуникаций. </p>
-</div>
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-12">
-            {% block content %}
-            {% endblock %}
+    <!-- Header -->
+    <header id="header">
+        <h1><a href="{% url 'main:home2' %}">Insight</a></h1>
+        <nav>
+            <a href="#menu">Menu</a>
+        </nav>
+    </header>
+
+    <!-- Menu -->
+    <nav id="menu">
+        <div class="inner">
+            <h2>Menu</h2>
+            <ul class="links">
+                <li><a href="{% url 'main:home2' %}">Главная</a></li>
+                <li><a href="{% url 'main:request_summary' %}">Начать работу</a></li>
+                <li><a href="{% url 'main:faq' %}">FAQ</a></li>
+                <li><a href="{% url 'main:summary_list' %}">История запросов</a></li>
+                <li><a href="https://tally.so/r/nPOeRd" target="_blank">Обратная связь</a></li>
+                {% if user.is_authenticated %}
+                <li><a href="{% url 'user:profile' request.user.pk %}">Профиль</a></li>
+
+                <!-- Form for logout -->
+                <form id="logout-form" method="post" action="{% url 'user:logout' %}" style="display:none;">
+                    {% csrf_token %}
+                </form>
+
+                <!-- Link that triggers the form submission -->
+                <li>
+                    <a href="#" onclick="document.getElementById('logout-form').submit();" class="p-2 btn btn-outline-primary">
+                        Выход
+                    </a>
+                </li>
+                {% else %}
+                <li><a href="{% url 'user:login' %}">Вход</a></li>
+                <li><a href="{% url 'user:register' %}">Регистрация</a></li>
+                {% endif %}
+            </ul>
+            <a href="#" class="close">Close</a>
         </div>
-    </div>
-</div>
-{% block summary_detail %}
-	
-{% endblock %}
+    </nav>
 
-<footer class="pt-4 my-md-5 pt-md-5 border-top">
-    <div class="row" style="text-align: center">
-        <div class="col-12 col-md">
-            Insight
-            <small class="d-block mb-3 text-muted">&copy; 2023</small>
-        </div>
-        <div class="col-6 col-md">
-            <h5>Категории</h5>
-            <ul class="list-unstyled text-small">
-                <li><a class="text-muted" href="#">Рассылки</a></li>
-                <li><a class="text-muted" href="https://t.me/ai_insighter_bot" target="_blank">Телеграм боты</a></li>
-                <li><a class="text-muted" href="#">Полезные утилиты</a></li>
-                <li><a class="text-muted" href="#">Веб-приложения</a></li>
-                <li><a class="text-muted" href="#">Микросервисы</a></li>
+    {% block content %}
+    {% endblock %}
+
+    <!-- Footer -->
+
+    <section id="footer">
+        <div class="inner">
+            <h2 class="major">Контакты</h2>
+            {% comment %}
+            <form method="post" action="#">
+                <div class="fields">
+                    <div class="field">
+                        <label for="name">Name</label>
+                        <input type="text" name="name" id="name"/>
+                    </div>
+                    <div class="field">
+                        <label for="email">Email</label>
+                        <input type="email" name="email" id="email"/>
+                    </div>
+                    <div class="field">
+                        <label for="message">Message</label>
+                        <textarea name="message" id="message" rows="4"></textarea>
+                    </div>
+                </div>
+                <ul class="actions">
+                    <li><input type="submit" value="Send Message"/></li>
+                </ul>
+            </form>
+            {% endcomment %}
+            <ul class="contact">
+                <li class="icon solid fa-home">
+                    Россия<br/>
+                    Санкт-Петербург
+                </li>
+                <li class="icon brands fa-telegram"><a href="https://t.me/ai_insighter_bot" target="_blank">Insighter</a></li>
+                <li class="icon solid fa-phone">(000) 000-0000</li>
+                <li class="icon solid fa-envelope"><a href="#">almaz28-10@mail.ru</a></li>
+                <li class="icon brands fa-twitter"><a href="#">twitter.com/untitled-tld</a></li>
+            </ul>
+            <ul class="copyright">
+                <li>&copy; Untitled Inc. All rights reserved.</li>
+                <li>Design: <a href="http://html5up.net">HTML5 UP</a></li>
             </ul>
         </div>
-        <div class="col-6 col-md">
-            <h5>О нас</h5>
-            <ul class="list-unstyled text-small">
-                <li><a class="text-muted" href="/contacts/">Контакты</a></li>
-            </ul>
-        </div>
-    </div>
-</footer>
-<script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+    </section>
+
+</div>
+
+<!-- Scripts -->
+<script src="{% static 'assets/js/jquery.min.js' %}"></script>
+<script src="{% static 'assets/js/jquery.scrollex.min.js' %}"></script>
+<script src="{% static 'assets/js/browser.min.js' %}"></script>
+<script src="{% static 'assets/js/breakpoints.min.js' %}"></script>
+<script src="{% static 'assets/js/util.js' %}"></script>
+<script src="{% static 'assets/js/main.js' %}"></script>
+
 </body>
 </html>
