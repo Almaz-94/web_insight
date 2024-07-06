@@ -11,7 +11,7 @@ services:
       - web_insight
 
   web_app:
-    build: .
+    image: docker.io/sp1kex/web_insight:${IMAGE_TAG:-latest}
     command: make start_app
     ports:
       - '8001:8001'
@@ -25,7 +25,7 @@ services:
       - web_insight
 
   listener:
-    build: .
+    image: docker.io/sp1kex/web_insight:${IMAGE_TAG:-latest}
     command: make run_listener
     depends_on:
       - db
