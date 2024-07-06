@@ -1,7 +1,7 @@
-from django.forms import ModelForm
+from django.forms import ModelForm, ChoiceField
 
 from main.models import Summary
-from main.services import get_user_time
+from main.services import get_user_time, get_all_assistants
 from main.validators import \
     validate_link_or_file, \
     validate_youtube, \
@@ -9,7 +9,14 @@ from main.validators import \
 from users.forms import StyleFormMixin
 
 
+class ScriptChoiceField(ChoiceField):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.choices = get_all_assistants()
+
+
 class SummaryForm(StyleFormMixin, ModelForm):
+    script = ScriptChoiceField()
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)

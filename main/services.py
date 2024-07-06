@@ -1,4 +1,5 @@
 import re
+import uuid
 from tempfile import NamedTemporaryFile
 
 import aiohttp
@@ -10,9 +11,11 @@ from django.core.exceptions import ValidationError
 from requests import RequestException
 
 from config_data.configs import load_config
+from django.conf import settings as django_settings
 from main.s3 import S3Client
 
 settings = load_config('.env')
+
 
 def get_s3_client():
     return S3Client(
@@ -28,7 +31,7 @@ def get_user_time(user):
         time_left = user.time_left
         error_message = f"Видео превышает по длине Ваше доступное время ({time_left} мин)"
     else:
-        time_left = settings.ALLOWED_TIME_UNAUTH_USER
+        time_left = django_settings.ALLOWED_TIME_UNAUTH_USER
         error_message = f"Неавторизованные пользователи могут загружать видео продолжительностью " \
                         f"не более {time_left} минут"
     return time_left, error_message
@@ -101,8 +104,8 @@ async def start_task_from_youtube(summary):
     endpoint = settings.api_config.start_youtube_process
     url = host + endpoint
     data = {
-        "unique_id": "unique_id",
-        "user_id": summary.user.id if summary.user else summary.session_key,
+        "unique_id": summary.unique_id,
+        "user_id": summary.user.id if summary.user else 0,
         "youtube_url": summary.youtube_link,
         "assistant_id": int(summary.script),
         "publisher_queue": settings.nats_listener.nats_queue,
@@ -124,9 +127,9 @@ async def start_task_from_storage(object):
     endpoint = settings.api_config.start_s3_process
     url = host + endpoint
     data = {
-        "user_id": object.user.id if object.user else object.session_key,
+        "user_id": object.user.id if object.user else 0,
         "s3_path": object.file_link_s3,
-        "assistant_id": object.script,
+        "assistant_id": int(object.script),
         "publisher_queue": settings.nats_listener.nats_queue,
         "storage_url": object.file_link_s3,
         "source": "web",
@@ -146,3 +149,7 @@ async def start_task_from_storage(object):
         print(f'aiohttp.ClientError: {e}')
     except Exception as e:
         print(f'Error sending data: {e}')
+
+
+def generate_unique_id():
+    return uuid.uuid4().hex
