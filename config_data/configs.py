@@ -93,8 +93,14 @@ def load_config(path: str | None = None) -> ProjectSettings:
 settings = ProjectSettings()
 
 if __name__ == '__main__':
-    project_settings = ProjectSettings()
-    host = settings.api_config.api_host_url
-    api_endpoint = settings.api_config.get_summary_text
-    url = host + api_endpoint
-    print(url)
+    import os
+    import django
+
+    # Устанавливаем переменную окружения DJANGO_SETTINGS_MODULE
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
+
+    # Инициализируем Django
+    django.setup()
+    from main.models import Summary
+    summary = Summary.objects.all()
+    print(summary)

@@ -29,7 +29,6 @@ async def get_transcribed_text(text_id) -> str:
 
     async with aiohttp.ClientSession() as session:
         res = await do_get_request(session=session, url=url, params=params)
-        logging.info(f"Transcribed text response: {res}")
         return res['text']
 
 

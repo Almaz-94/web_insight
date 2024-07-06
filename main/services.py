@@ -9,8 +9,12 @@ from aiohttp import ClientResponseError
 from django.core.exceptions import ValidationError
 from requests import RequestException
 
-from config_data.configs import settings
+from django.conf import settings as django_settings
+
+from config_data.configs import load_config
 from main.s3 import S3Client
+
+settings = load_config('.env')
 
 
 def get_s3_client():
@@ -27,7 +31,7 @@ def get_user_time(user):
         time_left = user.time_left
         error_message = f"Видео превышает по длине Ваше доступное время ({time_left} мин)"
     else:
-        time_left = settings.ALLOWED_TIME_UNAUTH_USER
+        time_left = django_settings.ALLOWED_TIME_UNAUTH_USER
         error_message = f"Неавторизованные пользователи могут загружать видео продолжительностью " \
                         f"не более {time_left} минут"
     return time_left, error_message
