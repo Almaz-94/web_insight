@@ -43,7 +43,7 @@
                                 <p class="card-text">Сценарий: {{ summary.get_script_display }}</p>
                                 <p class="card-text">Транскрибация готова: {{ summary.transcription_is_ready }}</p>
                                 <p class="card-text">Саммари готов: {{ summary.summary_is_ready }}</p>
-                                {% if summary.transcription_is_ready %}
+                                {% if summary.transcription %}
                                 <p class="card-text">
                                     <a href="{% url 'main:summary_download' pk=summary.pk %}">Скачать текст
                                         саммари</a>

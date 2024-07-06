@@ -1,8 +1,6 @@
 from django.conf import settings
-from django.core.exceptions import ValidationError
 from django.db import models
 
-from main.services import get_all_assistants
 from main.validators import validate_youtube_url
 
 NULLABLE = {'blank': True, 'null': True}
@@ -10,7 +8,8 @@ NULLABLE = {'blank': True, 'null': True}
 
 class Summary(models.Model):
 
-    SCRIPT_CHOICES = get_all_assistants()
+    # SCRIPT_CHOICES = ()
+    unique_id = models.CharField(max_length=100, unique=True)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name='пользователь', **NULLABLE)
     session_key = models.CharField(max_length=40, verbose_name='сессия', **NULLABLE)
     youtube_link = models.CharField(max_length=100, verbose_name='Youtube ссылка',
@@ -23,7 +22,7 @@ class Summary(models.Model):
     summary_is_ready = models.BooleanField(default=False, verbose_name="саммари готов")
     worker_db_id = models.IntegerField(verbose_name='ИД результата в БД воркера', **NULLABLE)
     date = models.DateTimeField(auto_now_add=True, verbose_name='дата и время запроса')
-    script = models.CharField(max_length=40, choices=SCRIPT_CHOICES, verbose_name='сценарий обработки')
+    script = models.CharField(max_length=40, verbose_name='сценарий обработки')
     prompt = models.TextField(verbose_name='Промт пользователя', **NULLABLE)
 
     # def __str__(self):

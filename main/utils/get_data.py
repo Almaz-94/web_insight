@@ -4,7 +4,7 @@ import aiohttp
 
 from config_data.configs import load_config
 
-settings = load_config('.env')
+project_settings = load_config('.env')
 
 logging.basicConfig(level=logging.INFO)
 
@@ -20,8 +20,8 @@ async def do_get_request(session: aiohttp.ClientSession, url: str, params=None):
 
 
 async def get_transcribed_text(text_id) -> str:
-    host = settings.api_config.api_host_url
-    api_endpoint = settings.api_config.get_transcribed_text
+    host = project_settings.api_config.api_host_url
+    api_endpoint = project_settings.api_config.get_transcribed_text
     url = host + api_endpoint
     params = {'id_text': text_id}
 
@@ -33,8 +33,8 @@ async def get_transcribed_text(text_id) -> str:
 
 
 async def get_summary_text(text_id) -> str:
-    host = settings.api_config.api_host_url
-    api_endpoint = settings.api_config.get_summary_text
+    host = project_settings.api_config.api_host_url
+    api_endpoint = project_settings.api_config.get_summary_text
     url = host + api_endpoint
     params = {'id_text': text_id}
 

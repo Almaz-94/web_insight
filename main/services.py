@@ -1,4 +1,5 @@
 import re
+import uuid
 from tempfile import NamedTemporaryFile
 
 import aiohttp
@@ -9,9 +10,8 @@ from aiohttp import ClientResponseError
 from django.core.exceptions import ValidationError
 from requests import RequestException
 
-from django.conf import settings as django_settings
-
 from config_data.configs import load_config
+from django.conf import settings as django_settings
 from main.s3 import S3Client
 
 settings = load_config('.env')
@@ -104,7 +104,7 @@ async def start_task_from_youtube(summary):
     endpoint = settings.api_config.start_youtube_process
     url = host + endpoint
     data = {
-        "unique_id": str(summary.unique_id),
+        "unique_id": summary.unique_id,
         "user_id": summary.user.id if summary.user else 0,
         "youtube_url": summary.youtube_link,
         "assistant_id": int(summary.script),
@@ -120,7 +120,8 @@ async def start_task_from_youtube(summary):
                 response.raise_for_status()
     except aiohttp.ClientError as e:
         print(f'Error sending data: {e}')
-        raise ValidationError(f'Error sending data: {e}')
+        # TODO: SOME OTHER ERROR
+        raise ValidationError(e)
 
 
 async def start_task_from_storage(object):
@@ -128,9 +129,9 @@ async def start_task_from_storage(object):
     endpoint = settings.api_config.start_s3_process
     url = host + endpoint
     data = {
-        "user_id": object.user.id if object.user else object.session_key,
+        "user_id": object.user.id if object.user else 0,
         "s3_path": object.file_link_s3,
-        "assistant_id": object.script,
+        "assistant_id": int(object.script),
         "publisher_queue": settings.nats_listener.nats_queue,
         "storage_url": object.file_link_s3,
         "source": "web",
@@ -150,3 +151,7 @@ async def start_task_from_storage(object):
         print(f'aiohttp.ClientError: {e}')
     except Exception as e:
         print(f'Error sending data: {e}')
+
+
+def generate_unique_id():
+    return uuid.uuid4().hex
