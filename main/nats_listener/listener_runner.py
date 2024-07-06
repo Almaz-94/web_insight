@@ -1,6 +1,8 @@
 import asyncio
+import os
 from contextlib import asynccontextmanager
 
+import django
 from faststream import FastStream, ContextRepo
 from faststream.nats import NatsBroker
 
@@ -9,13 +11,14 @@ from main.nats_listener.routers import nats_route
 
 @asynccontextmanager
 async def lifespan(context: ContextRepo):
-    # db = db
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
+    django.setup()
+    from main.models import Summary
+    summary_model: Summary = Summary()
 
-    context.set_global("model", "model")
+    context.set_global("summary_model", summary_model)
     # context.set_global("model", db)
-
     yield
-    print('end')
 
 
 async def main():
