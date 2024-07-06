@@ -9,15 +9,15 @@ async def send_message():
 
     await nc.connect(servers=["nats://194.87.79.10:4222"])
     message_data = {
-        "unique_id": 12,
+        "unique_id": "47",
         "type": 'web',
-        "tex_id": 71,
+        "tex_id": 87,
         "user_id": 3,
     }
     json_payload = json.dumps(message_data).encode('utf-8')
 
     # await nc.publish("web.wait.django.transcribe", b'Hello, NATS!')
-    await nc.publish("web.wait.django.transcribe", json_payload)
+    await nc.publish("web.wait.django.summary", json_payload)
     print("Message sent!")
 
     await nc.drain()

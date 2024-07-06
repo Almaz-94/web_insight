@@ -38,9 +38,6 @@ async def get_summary_text(text_id) -> str:
     url = host + api_endpoint
     params = {'id_text': text_id}
 
-    logging.info(f"Fetching transcribed text with text_id: {text_id}")
-
     async with aiohttp.ClientSession() as session:
         res = await do_get_request(session=session, url=url, params=params)
-        logging.info(f"Transcribed text response: {res}")
         return res['summary_text']

@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 
 import django
@@ -8,7 +9,7 @@ from faststream.nats import NatsRouter
 
 from config_data.configs import settings
 from main.nats_listener.model import ListenTriggerMessage
-from main.utils.get_data import get_summary_text
+from main.utils.get_data import get_transcribed_text, get_summary_text
 
 nats_server = settings.nats_listener.nats_server_url
 nats_queue = settings.nats_listener.nats_queue
@@ -20,44 +21,53 @@ async def process_transcribed_text(msg, context=Context()):
     summary_model = context.summary_model
 
     @sync_to_async
-    def save_transcribe_text(summary_model, id, text):
-        summary_obj, created = summary_model.objects.get_or_create(unique_id=id)
-        summary_obj.transcription = text
+    def save_transcribe_text(summary_model, id, transcribed_text):
+        summary_obj, created = summary_model.objects.get_or_create(id=id)
+        summary_obj.transcription = transcribed_text
+        summary_obj.transcription_is_ready = True
         summary_obj.save()
 
-    @sync_to_async
-    def print_transcribed():
-        summaries = summary_model.objects.all()
-        print(summaries)
+    if isinstance(msg, dict):
+        # Если `msg` уже является словарем (dict), это означает, что данные уже декодированы
+        data = msg
+    else:
+        # В противном случае, предполагаем, что `msg` является строкой и пытаемся её декодировать
+        try:
+            data = json.loads(msg)
+        except json.JSONDecodeError:
+            corrected_data = msg.replace("'", '"')
+            data = json.loads(corrected_data)
+    income_data = ListenTriggerMessage(**data)
 
-    await print_transcribed()
-    # raw_data = msg.data.decode()
-    # try:
-    #     data = json.loads(raw_data)
-    # except json.JSONDecodeError:
-    #     # Если ошибка, заменим одинарные кавычки на двойные и попробуем снова
-    #     corrected_data = raw_data.replace("'", '"')
-    #     data = json.loads(corrected_data)
-    # income_data = ListenTriggerMessage(**data)
-    # text = await get_transcribed_text(text_id=income_data.tex_id)
-    # save_transcribe_text(summary_model, income_data.unique_id, text)
-    # # database.save(income_data.unique_id)
-    # print(f"Parsed data: {income_data}")
-    # return income_data
+    transcribed_text = await get_transcribed_text(text_id=income_data.tex_id)
+    await save_transcribe_text(summary_model, income_data.unique_id, transcribed_text)
 
 
 @nats_route.subscriber(subject=f'{nats_queue}.summary')
-async def process_summary_text(msg):
-    raw_data = msg.data.decode()
-    try:
-        data = json.loads(raw_data)
-    except json.JSONDecodeError:
-        # Если ошибка, заменим одинарные кавычки на двойные и попробуем снова
-        corrected_data = raw_data.replace("'", '"')
-        data = json.loads(corrected_data)
+async def process_summary_text(msg, context=Context()):
+    summary_model = context.summary_model
+
+    @sync_to_async
+    def save_summary_text(summary_model, id, text):
+        summary_obj, created = summary_model.objects.get_or_create(id=id)
+        summary_obj.summary = text
+        summary_obj.summary_is_ready = True
+        summary_obj.save()
+
+    if isinstance(msg, dict):
+        # Если `msg` уже является словарем (dict), это означает, что данные уже декодированы
+        data = msg
+    else:
+        # В противном случае, предполагаем, что `msg` является строкой и пытаемся её декодировать
+        try:
+            data = json.loads(msg)
+        except json.JSONDecodeError:
+            corrected_data = msg.replace("'", '"')
+            data = json.loads(corrected_data)
+
     income_data = ListenTriggerMessage(**data)
-    text = await get_summary_text(text_id=income_data.tex_id)
-    print(text)
+    summary_text = await get_summary_text(text_id=income_data.tex_id)
+    await save_summary_text(summary_model, income_data.unique_id, summary_text)
 
 
 if __name__ == '__main__':
