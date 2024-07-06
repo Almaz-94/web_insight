@@ -15,6 +15,10 @@ nats_server = settings.nats_listener.nats_server_url
 nats_queue = settings.nats_listener.nats_queue
 nats_route = NatsRouter(prefix='')
 
+logging.basicConfig(level=logging.DEBUG)
+
+logger = logging.getLogger(__name__)
+
 
 @nats_route.subscriber(subject=f'{nats_queue}.transcribe')
 async def process_transcribed_text(msg, context=Context()):
@@ -23,9 +27,12 @@ async def process_transcribed_text(msg, context=Context()):
     @sync_to_async
     def save_transcribe_text(model, unique_id, text):
         summary_obj, created = model.objects.get_or_create(unique_id=unique_id)
+        if not summary_obj:
+            return False
         summary_obj.transcription = text
         summary_obj.transcription_is_ready = True
         summary_obj.save()
+        return True
 
     if isinstance(msg, dict):
         # Если `msg` уже является словарем (dict), это означает, что данные уже декодированы
@@ -40,7 +47,9 @@ async def process_transcribed_text(msg, context=Context()):
     income_data = ListenTriggerMessage(**data)
 
     transcribed_text = await get_transcribed_text(text_id=income_data.tex_id)
-    await save_transcribe_text(summary_model, income_data.unique_id, transcribed_text)
+    saving_result = await save_transcribe_text(summary_model, income_data.unique_id, transcribed_text)
+    if saving_result:
+        logger.info(" Транскрибация успешно сохранена")
 
 
 @nats_route.subscriber(subject=f'{nats_queue}.summary')
@@ -50,9 +59,12 @@ async def process_summary_text(msg, context=Context()):
     @sync_to_async
     def save_summary_text(model, unique_id, text):
         summary_obj, created = model.objects.get_or_create(unique_id=unique_id)
+        if not summary_obj:
+            return False
         summary_obj.summary = text
         summary_obj.summary_is_ready = True
         summary_obj.save()
+        return True
 
     if isinstance(msg, dict):
         # Если `msg` уже является словарем (dict), это означает, что данные уже декодированы
@@ -67,7 +79,9 @@ async def process_summary_text(msg, context=Context()):
 
     income_data = ListenTriggerMessage(**data)
     summary_text = await get_summary_text(text_id=income_data.tex_id)
-    await save_summary_text(summary_model, income_data.unique_id, summary_text)
+    saving_result = await save_summary_text(summary_model, income_data.unique_id, summary_text)
+    if saving_result:
+        logger.info(" Summary успешно сохранен")
 
 
 if __name__ == '__main__':

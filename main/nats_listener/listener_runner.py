@@ -16,12 +16,9 @@ settings = load_config('.env')
 async def lifespan(context: ContextRepo):
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
     django.setup()
-
     from main.models import Summary
 
-    summary_model: Summary = Summary()
-
-    context.set_global("summary_model", summary_model)
+    context.set_global('summary_model', Summary)
     yield
 
 
