@@ -17,13 +17,14 @@ class ScriptChoiceField(ChoiceField):
 
 class SummaryForm(StyleFormMixin, ModelForm):
     script = ScriptChoiceField()
+
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
 
     class Meta:
         model = Summary
-        fields = ('youtube_link', 'audio_file', 'script', 'prompt', )
+        fields = ('youtube_link', 'audio_file', 'script', 'prompt',)
 
     def clean(self):
         cleaned_data = super().clean()
@@ -41,4 +42,3 @@ class SummaryForm(StyleFormMixin, ModelForm):
             validate_audio_file(audio_file, time_left, error_message)
 
         return cleaned_data
-

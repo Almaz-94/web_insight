@@ -65,7 +65,11 @@ class SummaryCreateAsyncView(View):
             s3_client = get_s3_client()
 
             if form.cleaned_data['youtube_link']:
-                await start_task_from_youtube(summary)
+                try:
+                    await start_task_from_youtube(summary)
+                except ValidationError:
+                    # TODO: ERROR page
+                    return redirect(reverse_lazy('main:request_summary'))
 
             elif form.cleaned_data['audio_file']:
                 file_url = await self.handle_audio_file_upload(summary.audio_file, s3_client)
@@ -91,9 +95,8 @@ class SummaryCreateAsyncView(View):
             else:
                 form.instance.session_key = self.request.session.session_key
         # summary.save()
-        #return summary
+        # return summary
         return form.save()
-
 
     async def handle_audio_file_upload(self, audio_file, s3_client):
         temp_file_path = f'media/{audio_file.name}'

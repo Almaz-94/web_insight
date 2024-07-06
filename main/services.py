@@ -120,6 +120,8 @@ async def start_task_from_youtube(summary):
                 response.raise_for_status()
     except aiohttp.ClientError as e:
         print(f'Error sending data: {e}')
+        # TODO: SOME OTHER ERROR
+        raise ValidationError(e)
 
 
 async def start_task_from_storage(object):
