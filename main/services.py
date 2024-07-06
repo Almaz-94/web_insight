@@ -9,9 +9,10 @@ from aiohttp import ClientResponseError
 from django.core.exceptions import ValidationError
 from requests import RequestException
 
-from config_data.configs import settings
+from config_data.configs import load_config
 from main.s3 import S3Client
 
+settings = load_config('.env')
 
 def get_s3_client():
     return S3Client(

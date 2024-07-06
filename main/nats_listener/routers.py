@@ -1,6 +1,9 @@
+import json
 import os
 
 import django
+
+from main.nats_listener.model import ListenTriggerMessage
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
 django.setup()
@@ -69,3 +72,24 @@ async def process_summary_text(msg):
     except Summary.DoesNotExist:
         logging.error(f'Summary with text_id {text_id} does not exist')
     print(text)
+
+
+@nats_route.subscriber(subject=f'{nats_queue}.test')
+async def process_test(msg):
+    if isinstance(msg, dict):
+        # Если `msg` уже является словарем (dict), это означает, что данные уже декодированы
+        data = msg
+    else:
+        # В противном случае, предполагаем, что `msg` является строкой и пытаемся её декодировать
+        try:
+            data = json.loads(msg)
+        except json.JSONDecodeError:
+            # Если не удалось декодировать, можно выполнить другие обработки по необходимости
+            # Например, заменить одинарные кавычки на двойные и попробовать снова
+            corrected_data = msg.replace("'", '"')
+            data = json.loads(corrected_data)
+        income_data = ListenTriggerMessage(**data)
+        print(income_data)
+
+    # Теперь можно обращаться к полям данных напрямую
+    print(f"Received data: {data}")
