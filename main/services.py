@@ -1,4 +1,5 @@
 import re
+import uuid
 from tempfile import NamedTemporaryFile
 
 import aiohttp
@@ -9,16 +10,17 @@ from aiohttp import ClientResponseError
 from django.core.exceptions import ValidationError
 from requests import RequestException
 
-from config_data.configs import settings
+from config_data.configs import settings as project_settings
+from django.conf import settings as django_settings
 from main.s3 import S3Client
 
 
 def get_s3_client():
     return S3Client(
-        access_key=settings.s3_config.access_key,
-        secret_key=settings.s3_config.secret_key,
-        endpoint_url=settings.s3_config.endpoint_url,
-        bucket_name=settings.s3_config.bucket_name,
+        access_key=project_settings.s3_config.access_key,
+        secret_key=project_settings.s3_config.secret_key,
+        endpoint_url=project_settings.s3_config.endpoint_url,
+        bucket_name=project_settings.s3_config.bucket_name,
     )
 
 
@@ -27,7 +29,7 @@ def get_user_time(user):
         time_left = user.time_left
         error_message = f"Видео превышает по длине Ваше доступное время ({time_left} мин)"
     else:
-        time_left = settings.ALLOWED_TIME_UNAUTH_USER
+        time_left = django_settings.ALLOWED_TIME_UNAUTH_USER
         error_message = f"Неавторизованные пользователи могут загружать видео продолжительностью " \
                         f"не более {time_left} минут"
     return time_left, error_message
@@ -42,7 +44,7 @@ def extract_video_id(url):
 
 def get_youtube_video_duration(youtube_link) -> int:
     video_id = extract_video_id(youtube_link)
-    api_key = settings.youtube_api.youtube_api_key
+    api_key = project_settings.youtube_api.youtube_api_key
     url = f'https://www.googleapis.com/youtube/v3/videos?id={video_id}&part=contentDetails&key={api_key}'
     response = requests.get(url)
     if response.status_code == 200:
@@ -55,7 +57,7 @@ def get_youtube_video_duration(youtube_link) -> int:
 
 
 def get_audio_duration(file):
-    with NamedTemporaryFile(delete=False, dir=settings.FILE_UPLOAD_TEMP_DIR) as temp_file:
+    with NamedTemporaryFile(delete=False, dir=django_settings.FILE_UPLOAD_TEMP_DIR) as temp_file:
         for chunk in file.chunks():
             temp_file.write(chunk)
         temp_file.flush()
@@ -88,28 +90,31 @@ def get_media_duration_in_seconds(filepath):
 
 
 def get_all_assistants():
-    host = settings.api_config.api_host_url
-    url = f'{host}{settings.api_config.get_all_assistant}'
+    host = project_settings.api_config.api_host_url
+    url = f'{host}{project_settings.api_config.get_all_assistant}'
     response = requests.get(url).json()
     assistants = [(str(elem['assistant_id']), elem['name']) for elem in response]
     return tuple(assistants)
 
+if __name__ == '__main__':
+    print(get_all_assistants())
 
 async def start_task_from_youtube(summary):
-    host = settings.api_config.api_host_url
-    endpoint = settings.api_config.start_youtube_process
+    host = project_settings.api_config.api_host_url
+    endpoint = project_settings.api_config.start_youtube_process
     url = host + endpoint
     data = {
-        "unique_id": "unique_id",
-        "user_id": summary.user.id if summary.user else summary.session_key,
+        "unique_id": summary.unique_id,
+        "user_id": summary.user.id if summary.user else 0,
         "youtube_url": summary.youtube_link,
         "assistant_id": int(summary.script),
-        "publisher_queue": settings.nats_listener.nats_queue,
+        "publisher_queue": project_settings.nats_listener.nats_queue,
         "source": "web",
         "user_prompt": summary.prompt,
         "description": "string"
     }
     headers = {"accept": "application/json", "Content-Type": "application/json"}
+    print(data)
     try:
         async with aiohttp.ClientSession() as session:
             async with session.post(url, json=data, headers=headers) as response:
@@ -119,14 +124,14 @@ async def start_task_from_youtube(summary):
 
 
 async def start_task_from_storage(object):
-    host = settings.api_config.api_host_url
-    endpoint = settings.api_config.start_s3_process
+    host = project_settings.api_config.api_host_url
+    endpoint = project_settings.api_config.start_s3_process
     url = host + endpoint
     data = {
-        "user_id": object.user.id if object.user else object.session_key,
+        "user_id": object.user.id if object.user else 0,
         "s3_path": object.file_link_s3,
-        "assistant_id": object.script,
-        "publisher_queue": settings.nats_listener.nats_queue,
+        "assistant_id": int(object.script),
+        "publisher_queue": project_settings.nats_listener.nats_queue,
         "storage_url": object.file_link_s3,
         "source": "web",
         "user_prompt": object.prompt,
@@ -145,3 +150,7 @@ async def start_task_from_storage(object):
         print(f'aiohttp.ClientError: {e}')
     except Exception as e:
         print(f'Error sending data: {e}')
+
+
+def generate_unique_id():
+    return uuid.uuid4().hex

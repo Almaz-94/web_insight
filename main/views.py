@@ -1,4 +1,5 @@
 import logging
+import uuid
 
 from asgiref.sync import sync_to_async
 from django.conf import settings
@@ -11,7 +12,8 @@ from django.views.generic import ListView, DetailView, TemplateView
 
 from main.forms import SummaryForm
 from main.models import Summary
-from main.services import get_youtube_video_duration, get_audio_duration, start_task_from_youtube
+from main.services import get_youtube_video_duration, get_audio_duration, start_task_from_youtube, get_s3_client, \
+    start_task_from_storage
 
 logger = logging.getLogger(__name__)
 
@@ -60,9 +62,16 @@ class SummaryCreateAsyncView(View):
         form = SummaryForm(request.POST, request.FILES, user=request.user)
         if await sync_to_async(form.is_valid)():
             summary = await self.save_form(form)
+            s3_client = get_s3_client()
 
-            await start_task_from_youtube(summary)
+            if form.cleaned_data['youtube_link']:
+                await start_task_from_youtube(summary)
 
+            elif form.cleaned_data['audio_file']:
+                file_url = await self.handle_audio_file_upload(summary.audio_file, s3_client)
+                summary.file_link_s3 = file_url
+                await sync_to_async(summary.save)()
+                await start_task_from_storage(summary)
             await self.update_user_time_left(request.user, form)
 
             return redirect(reverse_lazy('main:summary_read', kwargs={'pk': summary.pk}))
@@ -74,12 +83,17 @@ class SummaryCreateAsyncView(View):
 
     @sync_to_async
     def save_form(self, form):
+        # summary = form.save(commit=False)
         if form.instance.pk is None:
+            form.instance.unique_id = uuid.uuid4().hex
             if self.request.user.is_authenticated:
                 form.instance.user = self.request.user
             else:
                 form.instance.session_key = self.request.session.session_key
+        # summary.save()
+        #return summary
         return form.save()
+
 
     async def handle_audio_file_upload(self, audio_file, s3_client):
         temp_file_path = f'media/{audio_file.name}'
