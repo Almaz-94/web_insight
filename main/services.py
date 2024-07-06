@@ -7,11 +7,11 @@ import ffmpeg
 import isodate
 import requests
 from aiohttp import ClientResponseError
+from django.conf import settings as django_settings
 from django.core.exceptions import ValidationError
 from requests import RequestException
 
 from config_data.configs import load_config
-from django.conf import settings as django_settings
 from main.s3 import S3Client
 
 settings = load_config('.env')
@@ -59,7 +59,7 @@ def get_youtube_video_duration(youtube_link) -> int:
 
 
 def get_audio_duration(file):
-    with NamedTemporaryFile(delete=False, dir=settings.FILE_UPLOAD_TEMP_DIR) as temp_file:
+    with NamedTemporaryFile(delete=False, dir=django_settings.FILE_UPLOAD_TEMP_DIR) as temp_file:
         for chunk in file.chunks():
             temp_file.write(chunk)
         temp_file.flush()
@@ -124,18 +124,19 @@ async def start_task_from_youtube(summary):
         raise ValidationError(e)
 
 
-async def start_task_from_storage(object):
+async def start_task_from_storage(summary):
     host = settings.api_config.api_host_url
     endpoint = settings.api_config.start_s3_process
     url = host + endpoint
     data = {
-        "user_id": object.user.id if object.user else 0,
-        "s3_path": object.file_link_s3,
-        "assistant_id": int(object.script),
+        "unique_id": summary.unique_id,
+        "user_id": summary.user.id if summary.user else 0,
+        "s3_path": summary.file_link_s3,
+        "assistant_id": int(summary.script),
         "publisher_queue": settings.nats_listener.nats_queue,
-        "storage_url": object.file_link_s3,
+        "storage_url": summary.file_link_s3,
         "source": "web",
-        "user_prompt": object.prompt,
+        "user_prompt": summary.prompt,
         "description": "string"
     }
     try:

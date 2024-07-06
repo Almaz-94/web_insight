@@ -92,8 +92,8 @@ DATABASES = {
         'NAME': os.getenv('POSTGRES_DB'),
         'PASSWORD': os.getenv('POSTGRES_PASSWORD'),
         'USER': os.getenv('POSTGRES_USER'),
-        #'HOST': os.getenv('POSTGRES_HOST'),
-        #'PORT': os.getenv('POSTGRES_PORT', '5432'),
+        # 'HOST': os.getenv('POSTGRES_HOST'),
+        # 'PORT': os.getenv('POSTGRES_PORT', '5432'),
     }
 }
 
@@ -157,7 +157,7 @@ ALLOWED_TIME_UNAUTH_USER = 10
 SUPPORTED_EXTENSIONS = ['m4a', 'm4b', 'm4p', 'm4r', 'mp3', 'aac', 'ac3', 'wav', 'alac',
                         'flac', 'flv', 'wma', 'amr', 'mpga', 'ogg', 'oga', 'mogg',
                         'svx', 'aif', 'ape', 'au', 'dss', 'opus', 'qcp', 'tta', 'voc', 'wv',
-                        'm4p', 'm4v', 'webm', 'mts', 'm2ts', 'ts', 'mov', 'mp2', 'mxf', ]
+                        'm4p', 'm4v', 'webm', 'mts', 'm2ts', 'ts', 'mov', 'mp2', 'mxf', 'mp4', ]
 
 FILE_UPLOAD_TEMP_DIR = os.path.join(MEDIA_ROOT, 'audio_files/temp')
 

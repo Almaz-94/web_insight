@@ -15,6 +15,7 @@ from main.models import Summary
 from main.services import get_youtube_video_duration, get_audio_duration, start_task_from_youtube, get_s3_client, \
     start_task_from_storage
 
+logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 
@@ -75,7 +76,11 @@ class SummaryCreateAsyncView(View):
                 file_url = await self.handle_audio_file_upload(summary.audio_file, s3_client)
                 summary.file_link_s3 = file_url
                 await sync_to_async(summary.save)()
-                await start_task_from_storage(summary)
+                try:
+                    await start_task_from_storage(summary)
+                except ValidationError:
+                    # TODO: ERROR page
+                    return redirect(reverse_lazy('main:request_summary'))
             await self.update_user_time_left(request.user, form)
 
             return redirect(reverse_lazy('main:summary_read', kwargs={'pk': summary.pk}))
@@ -94,14 +99,13 @@ class SummaryCreateAsyncView(View):
                 form.instance.user = self.request.user
             else:
                 form.instance.session_key = self.request.session.session_key
-        # summary.save()
-        # return summary
         return form.save()
 
-    async def handle_audio_file_upload(self, audio_file, s3_client):
+    @staticmethod
+    async def handle_audio_file_upload(audio_file, s3_client):
         temp_file_path = f'media/{audio_file.name}'
 
-        async def upload_and_get_url():
+        async def upload_and_get_url() -> str:
             await s3_client.upload_file(temp_file_path)
             return await s3_client.generate_presigned_url(temp_file_path.split('/')[-1])
 
