@@ -61,7 +61,10 @@ class SummaryCreateAsyncView(View):
         if await sync_to_async(form.is_valid)():
             summary = await self.save_form(form)
 
-            await start_task_from_youtube(summary)
+            try:
+                await start_task_from_youtube(summary)
+            except ValidationError:
+                return redirect(reverse_lazy('main:request_summary'))
 
             await self.update_user_time_left(request.user, form)
 

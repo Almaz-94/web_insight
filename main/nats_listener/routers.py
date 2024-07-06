@@ -21,9 +21,9 @@ async def process_transcribed_text(msg, context=Context()):
     summary_model = context.summary_model
 
     @sync_to_async
-    def save_transcribe_text(summary_model, id, transcribed_text):
-        summary_obj, created = summary_model.objects.get_or_create(id=id)
-        summary_obj.transcription = transcribed_text
+    def save_transcribe_text(model, unique_id, text):
+        summary_obj, created = model.objects.get_or_create(unique_id=unique_id)
+        summary_obj.transcription = text
         summary_obj.transcription_is_ready = True
         summary_obj.save()
 
@@ -48,8 +48,8 @@ async def process_summary_text(msg, context=Context()):
     summary_model = context.summary_model
 
     @sync_to_async
-    def save_summary_text(summary_model, id, text):
-        summary_obj, created = summary_model.objects.get_or_create(id=id)
+    def save_summary_text(model, unique_id, text):
+        summary_obj, created = model.objects.get_or_create(unique_id=unique_id)
         summary_obj.summary = text
         summary_obj.summary_is_ready = True
         summary_obj.save()
