@@ -1,19 +1,22 @@
+import json
 import logging
+import time
 import uuid
 
 from asgiref.sync import sync_to_async
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.http import Http404, HttpResponse
+from django.http import Http404, HttpResponse, StreamingHttpResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
 from django.views import View
 from django.views.generic import ListView, DetailView, TemplateView
+from django_sse.views import BaseSseView
 
 from main.forms import SummaryForm
 from main.models import Summary
 from main.services import get_youtube_video_duration, get_audio_duration, start_task_from_youtube, get_s3_client, \
-    start_task_from_storage
+    start_task_from_storage, get_all_assistants
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -132,6 +135,15 @@ class SummaryListView(ListView):
     template_name = 'main/summary_list.html'
     ordering = ['-date']
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+
+        script_choices = dict(get_all_assistants())
+        for summary in context['summary_requests']:
+            summary.script_name = script_choices.get(summary.script, 'Unknown Script')
+        return context
+
     def get_queryset(self):
         queryset = super().get_queryset()
         if self.request.user.is_authenticated:
@@ -146,6 +158,15 @@ class SummaryDetailView(DetailView):
     context_object_name = 'summary'
     model = Summary
     template_name = 'main/summary2.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['ALLOWED_TIME_UNAUTH_USER'] = settings.ALLOWED_TIME_UNAUTH_USER
+
+        script_id = self.object.script
+        script_choices = dict(get_all_assistants())
+        context['script_name'] = script_choices.get(script_id, 'Unknown Script')
+        return context
 
     def get_object(self, queryset=None):
         self.object = super().get_object(queryset)
@@ -172,3 +193,5 @@ class SummaryDownloadView(DetailView):
 
 class FAQView(TemplateView):
     template_name = 'main/faq2.html'
+
+

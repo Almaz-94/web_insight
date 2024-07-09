@@ -17,10 +17,13 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 
+from main import routing
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('main.urls', namespace='main')),
     path('user/', include('users.urls', namespace='user')),
     path('payment/', include('payment_youkassa.urls', namespace='payment')),
+    path('ws/', include(routing.websocket_urlpatterns)),
 
 ]

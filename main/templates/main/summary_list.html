@@ -23,29 +23,34 @@
                                         <th scope="col">Дата</th>
                                         <th scope="col">Ссылка/Файл</th>
                                         <th scope="col">Сценарий</th>
-                                        <th scope="col">Транскрибация готова</th>
+
                                         <th scope="col">Саммари готов</th>
                                         <th scope="col"></th>
                                     </tr>
                                     </thead>
 
                                     <tbody>
-                                    {% for object in summary_requests %}
+                                    {% for summary in summary_requests %}
                                     <tr>
-                                        <th scope="row">{{ object.pk }}</th>
-                                        <td>{{ object.date }}</td>
+                                        <th scope="row">{{ summary.pk }}</th>
+                                        <td>{{ summary.date }}</td>
                                         <td>
-                                            {% if object.youtube_link %}
-                                            <a href="{{ object.link }}" target="_blank">{{ object.youtube_link }}</a>
+                                            {% if summary.youtube_link %}
+                                            <a href="{{ object.link }}" target="_blank">{{ summary.youtube_link }}</a>
                                             {% else %}
-                                            {{ object.audio_file|filename }}
+                                            {{ summary.audio_file|filename }}
                                             {% endif %}
                                         </td>
-                                        <td>{{ object.get_script_display }}</td>
-                                        <td>{{ object.transcription_is_ready }}</td>
-                                        <td>{{ object.summary_is_ready }}</td>
+                                        <td>{{ summary.script_name }}</td>
                                         <td>
-                                            <a href="{% url 'main:summary_read' object.pk %}">
+                                            {% if summary.summary_is_ready %}
+                                            <a href="{% url 'main:summary_download' summary.pk %}">Скачать саммари</a>
+                                            {% else %}
+                                            <i class="fas fa-spinner fa-spin"></i>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <a href="{% url 'main:summary_read' summary.pk %}">
                                                 <button type="button" class="btn btn-sm btn-outline-secondary">
                                                     Подробнее
                                                 </button>

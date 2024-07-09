@@ -4,6 +4,10 @@
 {% block content %}
 <!-- Wrapper -->
 <section id="wrapper">
+    <head>
+        <script src="https://www.youtube.com/iframe_api"></script>
+        <link href="{% static 'css/styles.css' %}" rel="stylesheet">
+    </head>
     <header>
         <div class="inner">
             <h2>Информация по запросу №{{ summary.pk }}.</h2>
@@ -18,6 +22,7 @@
 
     <!-- Content -->
     <div class="wrapper">
+
         <div class="inner">
             <div class="row"> <!-- Added row here -->
                 <div class="col-lg-6">
@@ -40,42 +45,76 @@
                                     <a href="{{ summary.youtube_link }}" target="_blank">{{ summary.youtube_link}}</a>
                                 </p>
                                 {% endif %}
-                                <p class="card-text">Сценарий: {{ summary.get_script_display }}</p>
-                                <p class="card-text">Транскрибация готова: {{ summary.transcription_is_ready }}</p>
-                                <p class="card-text">Саммари готов: {{ summary.summary_is_ready }}</p>
-                                {% if summary.transcription %}
-                                <p class="card-text">
-                                    <a href="{% url 'main:summary_download' pk=summary.pk %}">Скачать текст
-                                        саммари</a>
-                                </p>
-                                <p class="card-text">Транскрибация: {{ summary.transcription }}</p>
+                                <p class="card-text">Сценарий: {{ script_name }}</p>
+                                {% if not summary.summary_is_ready %}
+                                <p class="card-text">Саммари: <i class="fas fa-spinner fa-spin"></i></p>
                                 {% endif %}
+                                {% if not summary.transcription_is_ready %}
+                                <p class="card-text">Транскрибация <i class="fas fa-spinner fa-spin"></i></p>
+                                {% endif %}
+
+                                <div class="col-lg-6 col-md-12">
+                                    {% if summary.youtube_link %}
+                                    <div id="player-container" class="text-center mb-4">
+                                        <div id="player"></div>
+                                    </div>
+                                    {% else %}
+                                    <h2>Выбранный файл</h2>
+                                    <audio controls>
+                                        <source src="{{ summary.file_link_s3 }}" type="audio/mpeg">
+                                        Your browser does not support the audio element.
+                                    </audio>
+                                    {% endif %}
+                                </div>
+
                                 {% if summary.summary_is_ready %}
-                                <p class="card-text">Саммари: {{ summary.summary }}</p>
+                                <p class="card-text">
+                                    <a href="{% url 'main:summary_download' pk=summary.pk %}"
+                                       class="download-button">
+                                        Скачать текст саммари
+                                    </a>
+                                </p>
+                                <p class="card-text">Саммари:<br> <span
+                                        id="summary-content">{{ summary.summary }}</span></p>
                                 {% endif %}
+                                {% if summary.transcription_is_ready %}
+                                <p class="card-text">Транскрибация:<br> <span id="transcription-content">{{ summary.transcription }}</span>
+                                </p>
+                                {% endif %}
+
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="col-lg-6 col-md-12">
-                    {% if summary.youtube_link %}
-                    <div id="player-container" class="text-center mb-4">
-                        <div id="player"></div>
-                    </div>
-                    {% else %}
-                    <h2>Выбранный файл</h2>
-                    <audio controls>
-                        <source src="{{ summary.file_link_s3 }}" type="audio/mpeg">
-                        Your browser does not support the audio element.
-                    </audio>
-                    {% endif %}
-                </div>
+
             </div> <!-- End of row -->
         </div>
     </div>
 
 
 </section>
+<script>
+    var summaryId = {{ summary.pk }};
+    var websocketProtocol = window.location.protocol === "https:" ? "wss://" : "ws://";
+    var socket = new WebSocket(websocketProtocol + window.location.host + '/ws/summary/' + summaryId + '/');
+
+    socket.onmessage = function(event) {
+        var data = JSON.parse(event.data);
+        if (data.transcription) {
+            document.getElementById('transcription-content').innerText = data.transcription;
+        }
+        if (data.summary) {
+            document.getElementById('summary-content').innerText = data.summary;
+        }
+    };
+
+    socket.onclose = function(event) {
+        console.error('WebSocket closed unexpectedly:', event);
+    };
+</script>
+
+
+
 <script>
     var videoId = '{{ summary.youtube_link|slice:"-11:" }}';
     var player;
