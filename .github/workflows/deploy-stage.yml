@@ -1,0 +1,118 @@
+name: deploy-stage
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - stage
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          # list of Docker images to use as base name for tags
+          images: |
+            sp1kex/web_insight
+          # generate Docker tags based on the following events/attributes
+          tags: |
+            type=ref,event=branch
+            type=sha
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          context: .
+          push: true
+          tags: ${{steps.meta.outputs.tags}}
+
+  cleanup:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set short sha
+        id: set_sha
+        run: echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
+
+      - name: Load SSH aws key
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.STAGE_PRIVATE_KEY }}
+
+      - name: Add SSH key to known_hosts
+        run: ssh-keyscan -H "${{ vars.STAGE_HOST_ADDRESS }}" >> ~/.ssh/known_hosts
+
+      - name: Create Docker Context
+        run: docker context create sage_web_context --docker "host=ssh://${{ vars.STAGE_SSH_ADDRESS }}" || true
+
+      - name: Check if services exist
+        id: check_services
+        # прописать свои сервисы
+        run: |
+          SERVICES_EXIST=$(docker --context sage_web_context ps -q --filter "name=postgres_container" --filter "name=migration_alembic" --filter "name=server_redis_cache" --filter "name=nats_worker" --filter "name=rabbit_worker" --filter "name=insighter_worker" --filter "name=insighter_api_server")
+          echo "Services Exist: $SERVICES_EXIST"
+          if [ -n "$SERVICES_EXIST" ]; then
+            echo "true"
+          else
+            echo "false"
+          fi | tee /tmp/services_exist.txt
+          echo "::set-output name=services_exist::$(cat /tmp/services_exist.txt)"
+
+      - name: Cleanup services if they exist
+        if: steps.check_services.outputs.services_exist == 'true'
+        # фильтры поменять
+        run: |
+          echo "${{ vars.STAGE_ENV_FILE }}" >> .env
+          docker --context sage_web_context compose -f docker-compose-prod.yml down
+          docker --context sage_web_context system prune -af
+          if ! docker --context sage_web_context network ls --filter name=web_insight --format '{{.Name}}' | grep -w web_insight; then
+          docker --context sage_web_context network create web_insight
+          fi
+  deploy:
+    needs: cleanup
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          sparse-checkout: |
+            docker-compose-prod.yml
+          sparse-checkout-cone-mode: false
+      - name: Set short sha
+        id: set_sha
+        run: echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
+
+      - name: Load SSH aws key
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{secrets.STAGE_PRIVATE_KEY}}
+
+      - name: Add SSH key to known_hosts
+        run: ssh-keyscan -H "${{vars.STAGE_HOST_ADDRESS}}" >> ~/.ssh/known_hosts
+
+      - name: Create Docker Context
+        run: docker context create sage_web_context --docker "host=ssh://${{ vars.STAGE_SSH_ADDRESS }}" || true
+
+      - name: Deploy
+        run: |
+          echo "${{ vars.STAGE_ENV_FILE }}" >> .env
+          export IMAGE_TAG=sha-${{ steps.set_sha.outputs.sha_short }}
+          docker --context sage_web_context compose -f docker-compose-prod.yml up -d
