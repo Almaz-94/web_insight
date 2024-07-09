@@ -61,7 +61,7 @@ jobs:
         run: ssh-keyscan -H "${{ vars.STAGE_HOST_ADDRESS }}" >> ~/.ssh/known_hosts
 
       - name: Create Docker Context
-        run: docker context create sage_web_context --docker "host=ssh://${{ vars.STAGE_SSH_ADDRESS }}"  true
+        run: docker context create sage_web_context --docker "host=ssh://${{ vars.STAGE_SSH_ADDRESS }}" || true
 
       - name: Check if services exist
         id: check_services
@@ -80,11 +80,11 @@ jobs:
         if: steps.check_services.outputs.services_exist == 'true'
         # фильтры поменять
         run: |
-          echo "${{ vars.STAGE_ENV_FILE }}" >> ./.env
+          echo "${{ vars.STAGE_ENV_FILE }}" >> .env
           docker --context sage_web_context compose -f docker-compose-prod.yml down
           docker --context sage_web_context system prune -af
-          if ! docker --context sage_web_context network ls --filter name=insighter_worker_stage_new --format '{{.Name}}' | grep -w insighter_worker_stage_new; then
-          docker --context sage_web_context network create insighter_worker_stage_new
+          if ! docker --context sage_web_context network ls --filter name=web_insight --format '{{.Name}}' | grep -w web_insight; then
+          docker --context sage_web_context network create web_insight
           fi
   deploy:
     needs: cleanup
@@ -109,10 +109,10 @@ jobs:
         run: ssh-keyscan -H "${{vars.STAGE_HOST_ADDRESS}}" >> ~/.ssh/known_hosts
 
       - name: Create Docker Context
-        run: docker context create sage_web_context --docker "host=ssh://${{ vars.STAGE_SSH_ADDRESS }}"  true
+        run: docker context create sage_web_context --docker "host=ssh://${{ vars.STAGE_SSH_ADDRESS }}" || true
 
       - name: Deploy
         run: |
-          echo "${{ vars.STAGE_ENV_FILE }}" >> ./.env
+          echo "${{ vars.STAGE_ENV_FILE }}" >> .env
           export IMAGE_TAG=sha-${{ steps.set_sha.outputs.sha_short }}
           docker --context sage_web_context compose -f docker-compose-prod.yml up -d
