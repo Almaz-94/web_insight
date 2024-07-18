@@ -18,7 +18,7 @@
 
     <!-- Header -->
     <header id="header">
-        <h1><a href="{% url 'main:home2' %}">Insight</a></h1>
+        <h1><a href="{% url 'main:home' %}">Insight</a></h1>
         <nav>
             <a href="#menu">Menu</a>
         </nav>
@@ -29,28 +29,29 @@
         <div class="inner">
             <h2>Menu</h2>
             <ul class="links">
-                <li><a href="{% url 'main:home2' %}">Главная</a></li>
+                <li><a href="{% url 'main:home' %}">Главная</a></li>
                 <li><a href="{% url 'main:request_summary' %}">Начать работу</a></li>
                 <li><a href="{% url 'main:faq' %}">FAQ</a></li>
                 <li><a href="{% url 'main:summary_list' %}">История запросов</a></li>
                 <li><a href="https://tally.so/r/nPOeRd" target="_blank">Обратная связь</a></li>
                 {% if user.is_authenticated %}
-                <li><a href="{% url 'user:profile' request.user.pk %}">Профиль</a></li>
+                    <li><a href="{% url 'user:profile' request.user.pk %}">Профиль</a></li>
 
-                <!-- Form for logout -->
-                <form id="logout-form" method="post" action="{% url 'user:logout' %}" style="display:none;">
-                    {% csrf_token %}
-                </form>
+                    <!-- Form for logout -->
+                    <form id="logout-form" method="post" action="{% url 'user:logout' %}" style="display:none;">
+                        {% csrf_token %}
+                    </form>
 
-                <!-- Link that triggers the form submission -->
-                <li>
-                    <a href="#" onclick="document.getElementById('logout-form').submit();" class="p-2 btn btn-outline-primary">
-                        Выход
-                    </a>
-                </li>
+                    <!-- Link that triggers the form submission -->
+                    <li>
+                        <a href="#" onclick="document.getElementById('logout-form').submit();"
+                           class="p-2 btn btn-outline-primary">
+                            Выход
+                        </a>
+                    </li>
                 {% else %}
-                <li><a href="{% url 'user:login' %}">Вход</a></li>
-                <li><a href="{% url 'user:register' %}">Регистрация</a></li>
+                    <li><a href="{% url 'user:login' %}">Вход</a></li>
+                    <li><a href="{% url 'user:register' %}">Регистрация</a></li>
                 {% endif %}
             </ul>
             <a href="#" class="close">Close</a>
@@ -65,40 +66,19 @@
     <section id="footer">
         <div class="inner">
             <h2 class="major">Контакты</h2>
-            {% comment %}
-            <form method="post" action="#">
-                <div class="fields">
-                    <div class="field">
-                        <label for="name">Name</label>
-                        <input type="text" name="name" id="name"/>
-                    </div>
-                    <div class="field">
-                        <label for="email">Email</label>
-                        <input type="email" name="email" id="email"/>
-                    </div>
-                    <div class="field">
-                        <label for="message">Message</label>
-                        <textarea name="message" id="message" rows="4"></textarea>
-                    </div>
-                </div>
-                <ul class="actions">
-                    <li><input type="submit" value="Send Message"/></li>
-                </ul>
-            </form>
-            {% endcomment %}
-            <ul class="contact">
+            <ul class="contact flex-container">
                 <li class="icon solid fa-home">
                     Россия<br/>
                     Санкт-Петербург
                 </li>
-                <li class="icon brands fa-telegram"><a href="https://t.me/ai_insighter_bot" target="_blank">Insighter</a></li>
+                <li class="icon brands fa-telegram"><a href="https://t.me/ai_insighter_bot"
+                                                       target="_blank">Insighter</a></li>
                 <li class="icon solid fa-phone">(000) 000-0000</li>
                 <li class="icon solid fa-envelope"><a href="#">almaz28-10@mail.ru</a></li>
                 <li class="icon brands fa-twitter"><a href="#">twitter.com/untitled-tld</a></li>
             </ul>
             <ul class="copyright">
                 <li>&copy; Untitled Inc. All rights reserved.</li>
-                <li>Design: <a href="http://html5up.net">HTML5 UP</a></li>
             </ul>
         </div>
     </section>

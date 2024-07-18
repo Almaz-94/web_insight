@@ -11,13 +11,13 @@ async def send_message():
     message_data = {
         "unique_id": "47",
         "type": 'web',
-        "tex_id": 87,
+        "tex_id": 1,
         "user_id": 3,
     }
     json_payload = json.dumps(message_data).encode('utf-8')
 
     # await nc.publish("web.wait.django.transcribe", b'Hello, NATS!')
-    await nc.publish("web.wait.django.summary", json_payload)
+    await nc.publish("web.wait.django.transcribe", json_payload)
     print("Message sent!")
 
     await nc.drain()

@@ -11,7 +11,6 @@ from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
 from django.views import View
 from django.views.generic import ListView, DetailView, TemplateView
-from django_sse.views import BaseSseView
 
 from main.forms import SummaryForm
 from main.models import Summary
@@ -39,7 +38,7 @@ class Home2(TemplateView):
 
 
 class SummaryCreateAsyncView(View):
-    template_name = 'main/request_summary2.html'
+    template_name = 'main/request_summary.html'
 
     def get_context_data(self, **kwargs):
         context = kwargs
@@ -157,7 +156,7 @@ class SummaryListView(ListView):
 class SummaryDetailView(DetailView):
     context_object_name = 'summary'
     model = Summary
-    template_name = 'main/summary2.html'
+    template_name = 'main/summary.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -192,6 +191,6 @@ class SummaryDownloadView(DetailView):
 
 
 class FAQView(TemplateView):
-    template_name = 'main/faq2.html'
+    template_name = 'main/FAQ.html'
 
 

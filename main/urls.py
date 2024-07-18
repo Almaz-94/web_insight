@@ -11,8 +11,8 @@ urlpatterns = [
     path('summary/<int:pk>/', SummaryDetailView.as_view(), name='summary_read'),
     path('summary/<int:pk>/download/', SummaryDownloadView.as_view(), name='summary_download'),
     path('FAQ/', FAQView.as_view(), name='faq'),
-    path('home/', Home.as_view(), name='home'),
-    path('', Home2.as_view(), name='home2'),
+    path('home/', Home.as_view(), name='home_light'),
+    path('', Home2.as_view(), name='home'),
     path('home2generic/', Home2generic.as_view(), name='home2generic'),
     path('home2elements/', Home2elements.as_view(), name='home2elements'),
 

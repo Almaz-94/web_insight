@@ -1,127 +1,195 @@
 {% extends 'main/base.html' %}
+{% load static %}
 {% load show_filename %}
 {% block content %}
-<head>
-    <script src="https://www.youtube.com/iframe_api"></script>
-</head>
+    <!-- Wrapper -->
+    <section id="wrapper">
+        <head>
+            <script src="https://www.youtube.com/iframe_api"></script>
+            <link href="{% static 'css/styles.css' %}" rel="stylesheet">
+            <style>
+                .text-content {
+                    word-wrap: break-word;
+                    white-space: pre-wrap;
+                    overflow-wrap: break-word;
+                    max-width: 100%;
+                    overflow: hidden;
+                }
+            </style>
+        </head>
+        <header>
+            <div class="inner">
+                <h2>Информация по запросу №{{ summary.pk }}.</h2>
+                {% if user.is_authenticated %}
+                    <h4 class="my-0 font-weight-normal">Доступное вам время {{ user.time_left }} мин.</h4>
+                {% else %}
+                    <h4 class="my-0 font-weight-normal">Доступное вам время {{ ALLOWED_TIME_UNAUTH_USER }}
+                        минут </h4>
+                {% endif %}
+            </div>
+        </header>
 
-<header data-bs-theme="dark" xmlns="http://www.w3.org/1999/html">
-    <div class="navbar navbar-dark bg-dark shadow-sm">
-        <div class="container">
-            <a href="#" class="navbar-brand d-flex align-items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor"
-                     stroke-linecap="round" stroke-linejoin="round" stroke-width="2" aria-hidden="true" class="me-2"
-                     viewBox="0 0 24 24" style="margin: 5px">
-                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
-                    <circle cx="12" cy="13" r="4"></circle>
-                </svg>
-                <strong>Post</strong>
-            </a>
-        </div>
-    </div>
-</header>
-
-<main>
-    <div class="album py-5 bg-body-tertiary">
-        <div class="container">
-            <div class="row">
+        <!-- Content -->
+        <div class="wrapper">
+            <div class="inner">
+                <!-- Block for embedding the game -->
                 <div class="col-lg-6">
-                    <div class="card shadow-sm">
-                        <div class="card mb-5 box-shadow">
-                            <div class="card-header">
-                                <h3 class="card-title pricing-card-title">Запрос №{{ summary.pk }}</h3>
-                            </div>
-                            <div class="card-body">
-                                {% if user.is_authenticated %}
-                                <p class="card-text">Автор: {{ summary.user }}</p>
-                                {% endif %}
-                                <p class="card-text">Дата: {{ summary.date }}</p>
-                                {% if summary.audio_file %}
-                                <p class="card-text">Файл: {{ summary.audio_file|filename }}</p>
-                                <p class="card-text">Ссылка: {{ summary.file_link_s3 }}</p>
-                                {% endif %}
-                                {% if summary.youtube_link %}
-                                <p class="card-text">Ссылка:
-                                    <a href="{{ summary.youtube_link }}" target="_blank">{{ summary.youtube_link }}</a>
-                                </p>
-                                {% endif %}
-                                <p class="card-text">ИД запроса в ДБ воркера: {{ summary.worker_db_id }}</p>
-                                <p class="card-text">Сценарий: {{ summary.get_script_display }}</p>
-                                <p class="card-text">Транскрибация готова: {{ summary.transcription_is_ready }}</p>
-                                <p class="card-text">Саммари готов: {{ summary.summary_is_ready }}</p>
-                                {% if summary.summary_is_ready %}
-                                <p class="card-text">
-                                    <a href="{% url 'main:summary_download' pk=summary.pk %}">Скачать текст
-                                        саммари</a>
-                                </p>
-                                <p class="card-text">Транскрибация: {{ summary.transcription }}</p>
-                                {% endif %}
-                                {% if summary.summary_is_ready %}
-                                <p class="card-text">Саммари: {{ summary.summary }}</p>
-                                {% endif %}
-                            </div>
+                    <div class="card mb-7 box-shadow">
+                        <div class="card-header">
+                            <h4>Ваша игра</h4>
+                            <!-- Toggle button for the game -->
+                            <button id="toggle-game-btn" class="btn btn-primary" onclick="toggleGame()"> Показать игру
+                            </button>
+                        </div>
+                        <div class="card-body" id="game-container" style="display: none">
+                            <iframe src="http://slither.com/io" width="100%" height="600px"
+                                    style="border: none"></iframe>
                         </div>
                     </div>
                 </div>
-                {% if summary.youtube_link %}
-                <div class="col-lg-6 col-md-12">
-                    <div id="player-container" class="text-center mb-4">
-                        <div id="player"></div>
+                <div class="row"> <!-- Added row here -->
+                    <div class="col-lg-6">
+                        <div class="" style="align-content: center">
+                            <div class="card mb-7 box-shadow">
+                                <div class="card-header">
+                                    <br></br>
+                                    <h3 class="card-title pricing-card-title">Запрос №{{ summary.pk }}</h3>
+                                </div>
+                                <div class="card-body">
+                                    {% if user.is_authenticated %}
+                                        <p class="card-text">Автор: {{ summary.user }}</p>
+                                    {% endif %}
+                                    <p class="card-text">Дата: {{ summary.date }}</p>
+                                    {% if summary.audio_file %}
+                                        <p class="card-text">Файл: {{ summary.audio_file|filename }}</p>
+                                    {% endif %}
+                                    {% if summary.youtube_link %}
+                                        <p class="card-text">Ссылка:
+                                            <a href="{{ summary.youtube_link }}"
+                                               target="_blank">{{ summary.youtube_link }}</a>
+                                        </p>
+                                    {% endif %}
+                                    <p class="card-text">Сценарий: {{ script_name }}</p>
+                                    {% if not summary.summary_is_ready %}
+                                        <p class="card-text">Саммари: <i class="fas fa-spinner fa-spin"></i></p>
+                                    {% endif %}
+                                    {% if not summary.transcription_is_ready %}
+                                        <p class="card-text">Транскрибация <i class="fas fa-spinner fa-spin"></i></p>
+                                    {% endif %}
+
+                                    <div class="col-lg-6 col-md-12">
+                                        {% if summary.youtube_link %}
+                                            <div id="player-container" class="text-center mb-4">
+                                                <div id="player"></div>
+                                            </div>
+                                        {% else %}
+                                            <h2>Выбранный файл</h2>
+                                            <audio controls>
+                                                <source src="{{ summary.file_link_s3 }}" type="audio/mpeg">
+                                                Your browser does not support the audio element.
+                                            </audio>
+                                        {% endif %}
+                                    </div>
+
+                                    {% if summary.summary_is_ready %}
+                                        <p class="card-text">
+                                            <a href="{% url 'main:summary_download' pk=summary.pk %}"
+                                               class="download-button">
+                                                Скачать текст саммари
+                                            </a>
+                                        </p>
+                                        <p class="card-text">Саммари:<br> <span
+                                                id="summary-content" class="text-content">{{ summary.summary }}</span>
+                                        </p>
+                                    {% endif %}
+                                    {% if summary.transcription_is_ready %}
+                                        <p class="card-text">Транскрибация:<br> <span
+                                                id="transcription-content"
+                                                class="text-content">{{ summary.transcription }}</span>
+                                        </p>
+                                    {% endif %}
+
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                </div>
-                {% else %}
-                <div class="col-lg-6 col-md-12">
-                    <h2>Выбранный файл</h2>
-                    <audio controls>
-                        <source src="{{ summary.file_link_s3 }}" type="audio/mpeg">
-                        Your browser does not support the audio element.
-                    </audio>
-                </div>
-                {% endif %}
+
+                </div> <!-- End of row -->
             </div>
         </div>
-    </div>
-</main>
-<script>
-    var videoId = '{{ summary.youtube_link|slice:"-11:" }}';
-    var player;
+    </section>
 
-    function onYouTubeIframeAPIReady() {
-        player = new YT.Player('player', {
-            height: '360',
-            width: '550',
-            videoId: videoId,
-            playerVars: {
-                'autoplay': 0,
-                'controls': 1,
-                'rel': 0,
-                'showinfo': 0
-            },
-            events: {
-                'onReady': onPlayerReady,
-                'onStateChange': onPlayerStateChange
+    {#<script>#}
+    {#    var summaryId = {{ summary.pk }};#}
+    {#    var websocketProtocol = window.location.protocol === "https:" ? "wss://" : "ws://";#}
+    {#    var socket = new WebSocket(websocketProtocol + window.location.host + '/ws/summary/' + summaryId + '/');#}
+    {##}
+    {#    socket.onmessage = function(event) {#}
+    {#        var data = JSON.parse(event.data);#}
+    {#        if (data.transcription) {#}
+    {#            document.getElementById('transcription-content').innerText = data.transcription;#}
+    {#        }#}
+    {#        if (data.summary) {#}
+    {#            document.getElementById('summary-content').innerText = data.summary;#}
+    {#        }#}
+    {#    };#}
+    {##}
+    {#    socket.onclose = function(event) {#}
+    {#        console.error('WebSocket closed unexpectedly:', event);#}
+    {#    };#}
+    {#</script>#}
+
+    <script>
+        var videoId = '{{ summary.youtube_link|slice:"-11:" }}';
+        var player;
+
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player('player', {
+                height: '360',
+                width: '550',
+                videoId: videoId,
+                playerVars: {
+                    'autoplay': 0,
+                    'controls': 1,
+                    'rel': 0,
+                    'showinfo': 0
+                },
+                events: {
+                    'onReady': onPlayerReady,
+                    'onStateChange': onPlayerStateChange
+                }
+            });
+        }
+
+        function onPlayerReady(event) {
+            // Do something when the player is ready
+        }
+
+        function onPlayerStateChange(event) {
+            // Do something when the player's state changes (e.g., video ends)
+        }
+
+        // Ensure the API script is loaded
+        if (typeof YT === 'undefined' || typeof YT.Player === 'undefined') {
+            var tag = document.createElement('script');
+            tag.src = "https://www.youtube.com/iframe_api";
+            var firstScriptTag = document.getElementsByTagName('script')[0];
+            firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+        } else {
+            // API already loaded, manually call the onYouTubeIframeAPIReady function
+            onYouTubeIframeAPIReady();
+        }
+
+        function toggleGame() {
+            var gameContainer = document.getElementById('game-container');
+            var toggleButton = document.getElementById('toggle-game-btn');
+            if (gameContainer.style.display === "none") {
+                gameContainer.style.display = "block";
+                toggleButton.textContent = "Скрыть игру";
+            } else {
+                gameContainer.style.display = "none";
+                toggleButton.textContent = "Показать игру";
             }
-        });
-    }
-
-    function onPlayerReady(event) {
-        // Do something when the player is ready
-    }
-
-    function onPlayerStateChange(event) {
-        // Do something when the player's state changes (e.g., video ends)
-    }
-
-    // Ensure the API script is loaded
-    if (typeof YT === 'undefined' || typeof YT.Player === 'undefined') {
-        var tag = document.createElement('script');
-        tag.src = "https://www.youtube.com/iframe_api";
-        var firstScriptTag = document.getElementsByTagName('script')[0];
-        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-    } else {
-        // API already loaded, manually call the onYouTubeIframeAPIReady function
-        onYouTubeIframeAPIReady();
-    }
-</script>
-
+        }
+    </script>
 {% endblock %}
